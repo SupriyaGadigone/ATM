@@ -9,20 +9,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "queue.h"
+#include "queue.c"
 
-
-/*
- * Declare the message structure.
- */
-
- 
- struct node {
-  int x;
-  struct node *next;
-};
- 
 void promptUser();
+void initialize(void); 
 
 /**
  Main 

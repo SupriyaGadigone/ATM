@@ -15,8 +15,8 @@ struct msgbuf *front, *back;
 
 
 /* Create an empty queue */
-void initialize() {
-   front = back;
+void initialize(void) {
+   front = back = NULL;
 }
  
 /* Returns queue size */

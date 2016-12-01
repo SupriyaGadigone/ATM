@@ -14,7 +14,7 @@ typedef struct msgbuf {
  } message_buf;
  
  
-extern void initialize();
+extern void initialize(void);
 int getQueueSize();
 int getFrontElement();
 int getBackElement();
