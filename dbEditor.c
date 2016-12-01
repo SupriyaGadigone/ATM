@@ -5,11 +5,13 @@
 	@author Supriya Gadigone
 **/
 
+#include <math.h>
+#include <stdlib.h>
 #include <sys/ipc.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include "queue.c"
+
 
 void promptUser();
 void initialize(void); 
@@ -25,9 +27,7 @@ int main(int argc, char* argv[])
 	int msgflg = IPC_CREAT | 0666; // message flag
     key_t key; // key to be passed to msgget()
     size_t buf_length; //buffer length
-				
-	
-	
+
 	promptUser();
 	
 	return 0;
@@ -38,15 +38,19 @@ int main(int argc, char* argv[])
 */
 void promptUser()
 {
-	int accountNumber, PIN;
+	char accountNumber[5] = "\0";
+	char PIN[3] = "\0";
 	float amountOfFunds;
-	printf("\nPlease enter an account number\n");	
-	scanf("%c", &accountNumber);		
-	printf("\nPlease enter your PIN number\n");	
-	scanf("%c", &PIN);
-	printf("\nPlease enter amount of funds\n");	
-	scanf("%f", &amountOfFunds);
+
+	printf("\nPlease enter an account number (5 digits) \n");	
+	scanf("%s", accountNumber);	
+
+	printf("\nPlease enter your PIN number (3 digits) \n");	
+	scanf("%s", PIN);	
 	
+	printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
+	scanf("%f", &amountOfFunds);
+
 }
 
 
