@@ -11,100 +11,39 @@
 #define MSGSZ 128
 
 
-struct msgbuf *front, *back;
- 
-
-
 /* Create an empty queue */
-void initialize(void) {
-   front = back = NULL;
+void initialize(msg_buff *buffer) {
+   buffer = (msg_buff *)malloc(sizeof(msg_buff));
+   buffer->front = NULL;
+   buffer->back = NULL;
 }
- 
-/* Returns queue size */
-int getQueueSize() {
-    struct msgbuf *temp = front;
-    int count = 0;
-     
-    if(front == NULL && back == NULL)
-        return 0;
- 
-    while(temp != back){
-        count++;
-        temp = temp->next;
-    }
-    if(temp == back)
-        count++;
-         
-    return count;
-}
-  
-/* Returns Frnt Element of the Queue 
-int getFrontElement() {
-    return front->data;
-}
- 
- Returns the Rear Element of the Queue 
-int getBackElement() {
-    return back->data;
-}
-*/
- 
-/*
-Check's if Queue is empty or not 
-*/
-void isEmpty() {
-    if (front == NULL && back == NULL)
-        printf("Empty Queue\n");
-    else
-        printf("Queue is not Empty\n");
-}
-/*
-Adding elements in Queue
-*/
-//void enqueue(long msgType, char mtext[MSGSZ], char *accountNumber, char *PIN, float amountOfFunds) {
-//    struct msgbuf *temp;
-//    temp = (struct msgbuf *)malloc(sizeof(struct msgbuf));
-//    temp->mtype = msgType;
-//    temp->mtext[MSGSZ] = mtext[MSGSZ];
-//    strncpy(temp->accountNumber, accountNumber, sizeof(accountNumber));
-//    strncpy(temp->PIN, PIN, sizeof(PIN));
-//    temp->amountOfFunds = amountOfFunds;
-//    temp->next = NULL;
-     
-//    if (back == NULL) {
-//        front = back = temp;
-//    } else {
-//      back->next = temp;
-//        back = temp;
-//    }
-//}
 
-void enqueue(message_buf *buf) {
-	message_buf *temp;
-	temp = (struct msgbuf *)malloc(sizeof(struct msgbuf));
-	temp = buf;
+void enqueue(msg_buff *buffer, msg *mesg) {
+	msg *temp;
+	temp = (msg *)malloc(sizeof(msg));
+	temp = mesg;
 	
-	if (back == NULL) {
-		front = back = temp;
+	if (buffer->back == NULL) {
+		buffer->front = buffer->back = temp;
     } else {
-      back->next = temp;
-        back = temp;
+		buffer->back->next = temp;
+        buffer->back = temp;
     }
 }
  
 /*
 Removes an element from front of the queue
 */
-void dequeue() {
-    struct msgbuf *temp;
-    if (front == NULL) {
+void dequeue(msg_buff *buffer) {
+    msg *temp;
+    if (buffer->front == NULL) {
         printf("\nQueue is Empty \n");
         return;
     } else {
-        temp = front;
-        front = front->next;
-        if(front == NULL){
-            back = NULL;
+        temp = buffer->front;
+        buffer->front = buffer->front->next;
+        if(buffer->front == NULL){
+            buffer->back = NULL;
         }
 
         free(temp);
@@ -114,20 +53,20 @@ void dequeue() {
 /*
  Print's Queue
 */
-void printQueue() {
-	struct msgbuf *temp = front;
+void printQueue(msg_buff *buffer) {
+	msg *temp = buffer->front;
   
-    if ((front == NULL) && (back == NULL)) {
+    if ((buffer->front == NULL) && (buffer->back == NULL)) {
         printf("Queue is Empty\n");
         return;
     }
  
     while (temp != NULL) {
-        printf("%ld\n",  temp->mtype);
+        printf("\n%ld\n",  temp->mtype);
         printf("%s\n",  temp->mtext);
         printf("%s\n",  temp->accountNumber);
         printf("%s\n",  temp->PIN);
-        printf("%f\n",  temp->amountOfFunds);
+        printf("%.2f\n",  temp->amountOfFunds);
 
         temp = temp->next;
         if(temp != NULL)

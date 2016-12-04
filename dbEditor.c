@@ -16,20 +16,20 @@
 #define MSGSZ 128
 
 void promptUser();
-void initialize(void); 
+
+msg_buff *buffer; 
 
 int main(int argc, char* argv[])						
 {	
-	
-	initialize();
+	initialize(buffer);
 	int msqid; //messageq id returned by the queue
 	int msgflg = IPC_CREAT | 0666; // message flag
-	struct message_buf *msgp; // pointer to message buffer
     size_t buf_length; //buffer length
     key_t key = 1234;
-    
-    msgp = (message_buf *)malloc((unsigned)(sizeof(message_buf) - sizeof(msgp->mtext + MSGSZ)));    
-    if (msgp == NULL) {
+    int maxmsgsz = MSGSZ;
+        
+    buffer = (msg_buff *)malloc((unsigned)(sizeof(msg_buff) - sizeof buffer->front->mtext + maxmsgsz));
+    if (buffer == NULL) {
 		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
 		exit(1);
     }
@@ -40,8 +40,6 @@ int main(int argc, char* argv[])
 	}
 
 	promptUser();
-
-	
 	return 0;
 }
 
@@ -51,11 +49,12 @@ int main(int argc, char* argv[])
 void promptUser()
 {
 	for(;;) {
-		message_buf *buff; 
-		buff = (struct msgbuf *)malloc(sizeof(struct msgbuf));
+		msg *mesg; 
+		mesg = (msg *)malloc(sizeof(msg));
 		
-		char accountNumber[5];
-		char PIN[3];
+		char *mtext = "Update DB";
+		char accountNumber[5] = "\0";
+		char PIN[3] = "\0";
 		float amountOfFunds;
 
 		printf("\nPlease enter an account number (5 digits) \n");	
@@ -69,17 +68,16 @@ void promptUser()
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%f", &amountOfFunds);
 		
-		buff->mtype = 1;
-		buff->mtext = "Update DB";
-        strncpy(buff->accountNumber, accountNumber, sizeof(accountNumber));
-        strncpy(buff->PIN, PIN, sizeof(PIN));
-		buff->amountOfFunds = amountOfFunds; 
-		buff->next = NULL; 
+		mesg->mtype = 1;
+        strncpy(mesg->accountNumber, accountNumber, sizeof(accountNumber));
+        strncpy(mesg->PIN, PIN, sizeof(PIN));
+        strncpy(mesg->mtext, mtext, sizeof(mtext));
+		mesg->amountOfFunds = amountOfFunds; 
+		mesg->next = NULL; 
 		
-		enqueue(buff); 
-		//enqueue(1, "Update DB", accountNumber, PIN, amountOfFunds);
+		enqueue(buffer, mesg); 
+		printQueue(buffer); 
 
-		
 	}
 }
 

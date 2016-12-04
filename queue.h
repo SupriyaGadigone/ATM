@@ -4,24 +4,25 @@
 #define MSGSZ 128
 
 
-typedef struct msgbuf {
-   long    mtype; //type of the msg
-   char    mtext[MSGSZ]; //size of the msg
+typedef struct message {
+   long mtype; //type of the msg
+   char mtext[MSGSZ]; //size of the msg
    char accountNumber[5];
    char PIN[3];
    float amountOfFunds;
-   struct msgbuf *next;
- } message_buf;
+   struct message *next;
+ } msg; 
+ 
+ typedef struct msgbuf {
+	 msg *front;
+	 msg *back;
+ } msg_buff; 
  
  
-extern void initialize(void);
-int getQueueSize();
-int getFrontElement();
-int getBackElement();
-void isEmpty();
-void enqueue(message_buf *buf);
-void dequeue();
-void printQueue();
+void initialize(msg_buff *buffer);
+void enqueue(msg_buff *buffer, msg *msg);
+void dequeue(msg_buff *buffer);
+void printQueue(msg_buff *buffer);
 
 
 #endif
