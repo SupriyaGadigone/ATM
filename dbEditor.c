@@ -52,18 +52,21 @@ void promptUser()
 		msg *mesg; 
 		mesg = (msg *)malloc(sizeof(msg));
 		
-		char *mtext = "Update DB";
-		char accountNumber[5] = "\0";
-		char PIN[3] = "\0";
+		const char *mtext = "Update DB";
+		//char accountNumber[5] = "\0";
+		char accountNumber[5] = {'\0'};
+		char PIN[3] = {'\0'};
 		float amountOfFunds;
 
 		printf("\nPlease enter an account number (5 digits) \n");	
 		//fgets(accountNumber, 20, stdin);
 		scanf("%s", accountNumber);	
-		printf("****%s", accountNumber);
+		
+		//printf("***%s", accountNumber);
 
 		printf("\nPlease enter your PIN number (3 digits) \n");	
 		scanf("%s", PIN);	
+		//printf("***%s", PIN);
 		
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%f", &amountOfFunds);

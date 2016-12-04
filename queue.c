@@ -54,6 +54,7 @@ void dequeue(msg_buff *buffer) {
  Print's Queue
 */
 void printQueue(msg_buff *buffer) {
+	int c;
 	msg *temp = buffer->front;
   
     if ((buffer->front == NULL) && (buffer->back == NULL)) {
@@ -64,8 +65,12 @@ void printQueue(msg_buff *buffer) {
     while (temp != NULL) {
         printf("\n%ld\n",  temp->mtype);
         printf("%s\n",  temp->mtext);
-        printf("%s\n",  temp->accountNumber);
-        printf("%s\n",  temp->PIN);
+        for (c=0;c < 5; c++)
+           printf("%c",  temp->accountNumber[c]);
+        printf("\n");
+        for (c=0;c < 3; c++)
+           printf("%c",  temp->PIN[c]);
+        printf("\n");
         printf("%.2f\n",  temp->amountOfFunds);
 
         temp = temp->next;
