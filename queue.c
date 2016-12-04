@@ -7,6 +7,7 @@
 #include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define MSGSZ 128
 
 
@@ -60,13 +61,13 @@ void isEmpty() {
 /*
 Adding elements in Queue
 */
-void enqueue(long msgType, char mtext[MSGSZ], char accountNumber, char PIN, float amountOfFunds) {
+void enqueue(long msgType, char mtext[MSGSZ], char *accountNumber, char *PIN, float amountOfFunds) {
     struct msgbuf *temp;
     temp = (struct msgbuf *)malloc(sizeof(struct msgbuf));
     temp->mtype = msgType;
     temp->mtext[MSGSZ] = mtext[MSGSZ];
-    temp->accountNumber = accountNumber;
-    temp->PIN = PIN;
+    strncpy(temp->accountNumber, accountNumber, sizeof(accountNumber));
+    strncpy(temp->PIN, PIN, sizeof(PIN));
     temp->amountOfFunds = amountOfFunds;
     temp->next = NULL;
      
@@ -109,11 +110,11 @@ void printQueue() {
     }
  
     while (temp != NULL) {
-        printf("%ld",  temp->mtype);
-        printf("%s",  temp->mtext);
-        printf("%i",  temp->accountNumber);
-        printf("%i",  temp->PIN);
-        printf("%f",  temp->amountOfFunds);
+        printf("%ld\n",  temp->mtype);
+        printf("%s\n",  temp->mtext);
+        printf("%s\n",  temp->accountNumber);
+        printf("%s\n",  temp->PIN);
+        printf("%f\n",  temp->amountOfFunds);
 
         temp = temp->next;
         if(temp != NULL)

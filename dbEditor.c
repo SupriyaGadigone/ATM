@@ -44,13 +44,16 @@ void promptUser()
 
 	printf("\nPlease enter an account number (5 digits) \n");	
 	scanf("%s", accountNumber);	
+	printf("****%s", accountNumber);
 
 	printf("\nPlease enter your PIN number (3 digits) \n");	
 	scanf("%s", PIN);	
 	
 	printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 	scanf("%f", &amountOfFunds);
-
+	
+	enqueue(1, "fdsd", accountNumber, PIN, amountOfFunds);
+	printQueue(); 
 }
 
 
