@@ -19,7 +19,7 @@ int getQueueSize();
 int getFrontElement();
 int getBackElement();
 void isEmpty();
-void enqueue(long msgType, char mtext[MSGSZ], char *accountNumber, char *PIN, float amountOfFunds);
+void enqueue(message_buf *buf);
 void dequeue();
 void printQueue();
 

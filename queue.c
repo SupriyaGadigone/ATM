@@ -61,20 +61,33 @@ void isEmpty() {
 /*
 Adding elements in Queue
 */
-void enqueue(long msgType, char mtext[MSGSZ], char *accountNumber, char *PIN, float amountOfFunds) {
-    struct msgbuf *temp;
-    temp = (struct msgbuf *)malloc(sizeof(struct msgbuf));
-    temp->mtype = msgType;
-    temp->mtext[MSGSZ] = mtext[MSGSZ];
-    strncpy(temp->accountNumber, accountNumber, sizeof(accountNumber));
-    strncpy(temp->PIN, PIN, sizeof(PIN));
-    temp->amountOfFunds = amountOfFunds;
-    temp->next = NULL;
+//void enqueue(long msgType, char mtext[MSGSZ], char *accountNumber, char *PIN, float amountOfFunds) {
+//    struct msgbuf *temp;
+//    temp = (struct msgbuf *)malloc(sizeof(struct msgbuf));
+//    temp->mtype = msgType;
+//    temp->mtext[MSGSZ] = mtext[MSGSZ];
+//    strncpy(temp->accountNumber, accountNumber, sizeof(accountNumber));
+//    strncpy(temp->PIN, PIN, sizeof(PIN));
+//    temp->amountOfFunds = amountOfFunds;
+//    temp->next = NULL;
      
-    if (back == NULL) {
-        front = back = temp;
+//    if (back == NULL) {
+//        front = back = temp;
+//    } else {
+//      back->next = temp;
+//        back = temp;
+//    }
+//}
+
+void enqueue(message_buf *buf) {
+	message_buf *temp;
+	temp = (struct msgbuf *)malloc(sizeof(struct msgbuf));
+	temp = buf;
+	
+	if (back == NULL) {
+		front = back = temp;
     } else {
-        back->next = temp;
+      back->next = temp;
         back = temp;
     }
 }
