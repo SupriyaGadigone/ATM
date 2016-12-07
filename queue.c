@@ -64,7 +64,9 @@ void printQueue(msg_buff *buffer) {
  
     while (temp != NULL) {
         printf("\n%ld\n",  temp->mtype);
-        printf("%s\n",  temp->mtext);
+        for (c=0;c < MSGSZ; c++)
+            printf("%c",  temp->mtext[c]);
+        printf("\n");
         for (c=0;c < 5; c++)
            printf("%c",  temp->accountNumber[c]);
         printf("\n");

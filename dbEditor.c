@@ -17,16 +17,22 @@
 
 void promptUser();
 
-msg_buff *buffer; 
+msg_buff *buffer;
+long msgtyp = 1; 
+int msqid; //messageq id returned by the queue
+int msgflg = IPC_CREAT | 0666; // message flag
 
 int main(int argc, char* argv[])						
 {	
+	
+	
 	initialize(buffer);
-	int msqid; //messageq id returned by the queue
-	int msgflg = IPC_CREAT | 0666; // message flag
+	
+	
     size_t buf_length; //buffer length
     key_t key = 1234;
     int maxmsgsz = MSGSZ;
+   
         
     buffer = (msg_buff *)malloc((unsigned)(sizeof(msg_buff) - sizeof buffer->front->mtext + maxmsgsz));
     if (buffer == NULL) {
@@ -34,10 +40,12 @@ int main(int argc, char* argv[])
 		exit(1);
     }
     
+    //initializing the message queue
     if((msqid = msgget(key, msgflg)) == -1) {
 		perror("msgget failed");
 		exit(1);
 	}
+	
 
 	promptUser();
 	return 0;
@@ -66,15 +74,22 @@ void promptUser()
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%f", &amountOfFunds);
 		
-		mesg->mtype = 1;
+		mesg->mtype = msgtyp;
         strncpy(mesg->accountNumber, accountNumber, sizeof(accountNumber));
         strncpy(mesg->PIN, PIN, sizeof(PIN));
-        strncpy(mesg->mtext, mtext, sizeof(mtext));
+        strncpy(mesg->mtext, mtext, MSGSZ);
 		mesg->amountOfFunds = amountOfFunds; 
 		mesg->next = NULL; 
 		
 		enqueue(buffer, mesg); 
 		printQueue(buffer); 
+		
+		//sending a message
+		if(msgsnd(msqid, buffer, MSGSZ, msgflg) == -1)
+		{
+			perror ("msgop: msgsnd failed");
+		}
+	
 
 	}
 }
