@@ -59,15 +59,16 @@ void promptUser()
 {
 	for(;;) {
 		const char *mtext = "Update DB";
-		char accountNumber[5] = {'\0'};
-		char PIN[3] = {'\0'};
+		char accountNumber[5];// = {'\0'};
+		char PIN[3];// = {'\0'};
 		float amountOfFunds;
 
 		printf("\nPlease enter an account number (5 digits) \n");	
-		scanf("%s", accountNumber);	
+		scanf_s("%s", accountNumber, 5);	
+		printf("%s",  sbuf->accountNumber);
 		
 		printf("\nPlease enter your PIN number (3 digits) \n");	
-		scanf("%s", PIN);	
+		scanf_s("%s", PIN, 3);	
 		
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%f", &amountOfFunds);
