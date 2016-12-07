@@ -3,6 +3,9 @@
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone
+	
+	TO COMPILE: 
+	* gcc ATM.c -o ATM -lpthread
 **/
 
 #include <stdlib.h>
