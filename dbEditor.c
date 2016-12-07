@@ -64,11 +64,11 @@ void promptUser()
 		float amountOfFunds;
 
 		printf("\nPlease enter an account number (5 digits) \n");	
-		scanf_s("%s", accountNumber, 5);	
+		scanf("%s", accountNumber);	
 		printf("%s",  sbuf->accountNumber);
 		
 		printf("\nPlease enter your PIN number (3 digits) \n");	
-		scanf_s("%s", PIN, 3);	
+		scanf("%s", PIN);	
 		
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%f", &amountOfFunds);
@@ -82,7 +82,7 @@ void promptUser()
 		printMessage();
 		
 		//sending a message
-		if(msgsnd(msqid, sbuf, MSGSZ, msgflg) == -1)
+		if(msgsnd(msqid, sbuf, sizeof(msg_buff), msgflg) == -1)
 		{
 			perror ("msgop: msgsnd failed");
 		}

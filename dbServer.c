@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	}
 	
 	//receive a message
-	if(msgrcv (msqid, &rbuf, MSGSZ, 1, 0) < 0)
+	if(msgrcv (msqid, &rbuf, sizeof(msg_buff), 1, 0) < 0)
 	{
 		perror("msgget");
 		exit(1);
