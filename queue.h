@@ -3,19 +3,20 @@
 
 #define MSGSZ 128
 
+typedef struct account {
+	char accountNumber[5];
+	char PIN[3];
+	float amountOfFunds;
+	struct account *next; 
+} account;
 
-typedef struct message {
-   long mtype; //type of the msg
-   char mtext[MSGSZ]; //size of the msg
-   char accountNumber[5];
-   char PIN[3];
-   float amountOfFunds;
- } msg;  
+typedef struct bank {
+	account *front;
+	account *back; 
+} bank;  
  
-void initialize(msg_buff *buffer);
-void enqueue(msg_buff *buffer, msg *msg);
-void dequeue(msg_buff *buffer);
-void printQueue(msg_buff *buffer);
-
-
+void initialize(bank *accounts);
+void enqueue(bank *accounts, account *acc);
+void dequeue(bank *accounts);
+void printQueue(bank *accounts);
 #endif

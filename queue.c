@@ -12,61 +12,38 @@
 
 
 /* Create an empty queue */
-void initialize(msg_buff *buffer) {
-   buffer = (msg_buff *)malloc(sizeof(msg_buff));
-   buffer->front = NULL;
-   buffer->back = NULL;
+void initialize(bank *accounts) {
+   accounts = (bank *)malloc(sizeof(bank));
+   accounts->front = NULL;
+   accounts->back = NULL;
 }
 
-void enqueue(msg_buff *buffer, msg *mesg) {
-	msg *temp;
-	temp = (msg *)malloc(sizeof(msg));
-	temp = mesg;
+void enqueue(bank *accounts, account *acc) {
+	account *temp;
+	temp = (account *)malloc(sizeof(acc));
+	temp = acc;
 	
-	if (buffer->back == NULL) {
-		buffer->front = buffer->back = temp;
+	if (accounts->back == NULL) {
+		accounts->front = accounts->back = temp;
     } else {
-		buffer->back->next = temp;
-        buffer->back = temp;
-    }
-}
- 
-/*
-Removes an element from front of the queue
-*/
-void dequeue(msg_buff *buffer) {
-    msg *temp;
-    if (buffer->front == NULL) {
-        printf("\nQueue is Empty \n");
-        return;
-    } else {
-        temp = buffer->front;
-        buffer->front = buffer->front->next;
-        if(buffer->front == NULL){
-            buffer->back = NULL;
-        }
-
-        free(temp);
+		accounts->back->next = temp;
+        accounts->back = temp;
     }
 }
   
 /*
  Print's Queue
 */
-void printQueue(msg_buff *buffer) {
+void printQueue(bank *accounts) {
 	int c;
-	msg *temp = buffer->front;
+	account *temp = accounts->front;
   
-    if ((buffer->front == NULL) && (buffer->back == NULL)) {
+    if ((accounts->front == NULL) && (accounts->back == NULL)) {
         printf("Queue is Empty\n");
         return;
     }
  
     while (temp != NULL) {
-        printf("\n%ld\n",  temp->mtype);
-        for (c=0;c < MSGSZ; c++)
-            printf("%c",  temp->mtext[c]);
-        printf("\n");
         for (c=0;c < 5; c++)
            printf("%c",  temp->accountNumber[c]);
         printf("\n");
