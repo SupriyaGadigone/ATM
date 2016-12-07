@@ -1,2 +1,2 @@
 Account Number	PIN	Amount of Funds
-123)œ¡C323.220001
+	34567		456		3546.65

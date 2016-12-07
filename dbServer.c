@@ -53,10 +53,18 @@ int main(int argc, char* argv[])
 	
 	const char *text = "Account Number\tPIN\tAmount of Funds";
 	fprintf(file, "%s\n", text);
-	fprintf(file, "%s", rbuf.accountNumber); 
-	fprintf(file, "%s", rbuf.PIN); 
-	fprintf(file, "%f", rbuf.amountOfFunds);  
-	
+	fprintf(file, "\t");
+	int c;
+	for (c=0;c < 5; c++) {
+		fprintf(file, "%c", rbuf.accountNumber[c]);
+	}
+    fprintf(file, "\t\t");
+	for (c=0;c < 3; c++) {
+		fprintf(file, "%c", rbuf.PIN[c]);
+	}
+    fprintf(file, "\t\t");
+    fprintf(file, "%.2f",  rbuf.amountOfFunds);
+
 	printMessage();
 	
 	return 0;

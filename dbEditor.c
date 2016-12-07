@@ -59,8 +59,8 @@ void promptUser()
 {
 	for(;;) {
 		const char *mtext = "Update DB";
-		char accountNumber[5];// = {'\0'};
-		char PIN[3];// = {'\0'};
+		char accountNumber[5] = {'\0'};
+		char PIN[3] = {'\0'};
 		float amountOfFunds;
 
 		printf("\nPlease enter an account number (5 digits) \n");	
