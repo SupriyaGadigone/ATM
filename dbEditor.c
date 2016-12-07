@@ -11,31 +11,33 @@
 #include <string.h>
 #include <sys/types.h> 
 #include <sys/msg.h>
-#include "queue.c"
 
 #define MSGSZ 128
 
-void promptUser();
+typedef struct message {
+   long mtype; //type of the msg
+   char mtext[MSGSZ]; //size of the msg
+   char accountNumber[5];
+   char PIN[3];
+   float amountOfFunds;
+ } msg_buff; 
 
-msg_buff *buffer;
+void promptUser();
+void printMessage();
+
+msg_buff *sbuf;
 long msgtyp = 1; 
 int msqid; //messageq id returned by the queue
 int msgflg = IPC_CREAT | 0666; // message flag
 
 int main(int argc, char* argv[])						
 {	
-	
-	
-	initialize(buffer);
-	
-	
     size_t buf_length; //buffer length
     key_t key = 1234;
     int maxmsgsz = MSGSZ;
-   
-        
-    buffer = (msg_buff *)malloc((unsigned)(sizeof(msg_buff) - sizeof buffer->front->mtext + maxmsgsz));
-    if (buffer == NULL) {
+     
+    sbuf = (msg_buff *)malloc((unsigned)(sizeof(msg_buff) - sizeof sbuf->mtext + maxmsgsz));
+    if (sbuf == NULL) {
 		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
 		exit(1);
     }
@@ -45,7 +47,6 @@ int main(int argc, char* argv[])
 		perror("msgget failed");
 		exit(1);
 	}
-	
 
 	promptUser();
 	return 0;
@@ -57,9 +58,6 @@ int main(int argc, char* argv[])
 void promptUser()
 {
 	for(;;) {
-		msg *mesg; 
-		mesg = (msg *)malloc(sizeof(msg));
-		
 		const char *mtext = "Update DB";
 		char accountNumber[5] = {'\0'};
 		char PIN[3] = {'\0'};
@@ -74,24 +72,40 @@ void promptUser()
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%f", &amountOfFunds);
 		
-		mesg->mtype = msgtyp;
-        strncpy(mesg->accountNumber, accountNumber, sizeof(accountNumber));
-        strncpy(mesg->PIN, PIN, sizeof(PIN));
-        strncpy(mesg->mtext, mtext, MSGSZ);
-		mesg->amountOfFunds = amountOfFunds; 
-		mesg->next = NULL; 
+		sbuf->mtype = msgtyp;
+        strncpy(sbuf->accountNumber, accountNumber, sizeof(accountNumber));
+        strncpy(sbuf->PIN, PIN, sizeof(PIN));
+        strncpy(sbuf->mtext, mtext, MSGSZ);
+		sbuf->amountOfFunds = amountOfFunds; 
 		
-		enqueue(buffer, mesg); 
-		printQueue(buffer); 
+		printMessage();
 		
 		//sending a message
-		if(msgsnd(msqid, buffer, MSGSZ, msgflg) == -1)
+		if(msgsnd(msqid, sbuf, MSGSZ, msgflg) == -1)
 		{
 			perror ("msgop: msgsnd failed");
 		}
 	
 
 	}
+}
+
+void printMessage() {
+	printf("\n%ld\n",  sbuf->mtype);
+    int c; 
+    for (c=0;c < MSGSZ; c++) {
+		printf("%c",  sbuf->mtext[c]);
+	}
+    printf("\n");
+    for (c=0;c < 5; c++) {
+		printf("%c",  sbuf->accountNumber[c]);
+	}
+	printf("\n");
+	for (c=0;c < 3; c++) {
+		printf("%c",  sbuf->PIN[c]);
+	}
+    printf("\n");
+    printf("%.2f\n",  sbuf->amountOfFunds);
 }
 
 

@@ -10,14 +10,7 @@ typedef struct message {
    char accountNumber[5];
    char PIN[3];
    float amountOfFunds;
-   struct message *next;
- } msg; 
- 
- typedef struct msgbuf {
-	 msg *front;
-	 msg *back;
- } msg_buff; 
- 
+ } msg;  
  
 void initialize(msg_buff *buffer);
 void enqueue(msg_buff *buffer, msg *msg);
