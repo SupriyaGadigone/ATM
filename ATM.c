@@ -29,7 +29,7 @@ bank *accounts;
 int numOfAccounts = 0;
 FILE* database; 
 
-void updateDatabase(char accountNumber[5], char PIN[3], char *amountOfFunds);
+void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100]);
 void populateDB();
 void* dbEditor(void* arg);
 void* dbServer(void *arg);
@@ -44,14 +44,17 @@ int main() {
 	return 0; 
 }
 
-void updateDatabase(char accountNumber[5], char PIN[3], char *amountOfFunds) {
+void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100]) {
 	database = fopen("dataBase.txt", "w");
 	if(database == NULL) {
 		printf("Error opening file!\n");
 		exit(1);
 	}
 	
-	fprintf(database, "%s,,%s,,%s", accountNumber, PIN, amountOfFunds); 
+	fprintf(database, "%s,", accountNumber);
+	fprintf(database, "%s,", PIN);
+	fprintf(database, "%s,", amountOfFunds);   
+	fprintf(database, "\n"); 
 	
 	fclose(database); 
 }
@@ -93,16 +96,18 @@ void populateDB() {
 void* dbServer(void *arg) {
 	key_t serverKey = 1234;
 	int serverID;
-	msg *message; 
+	msg message; 
 	int i;  
 	
+	/*
 	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
     if (message == NULL) {
 		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
 		exit(1);
 	}
+	*/
 	
-	if((serverID = msgget(serverKey, IPC_CREAT | 0666))	< 0)
+	if((serverID = msgget(serverKey, 0666))	< 0)
 	{
 		perror("msgget for server failed");
 		exit(1);
@@ -111,26 +116,26 @@ void* dbServer(void *arg) {
 	for(;;) {
 		if(msgrcv (serverID, &message, sizeof(msg), 1, 0) < 0) // receive Update DB message
 		{
-			perror("msgget");
+			perror("msrcv");
 			exit(1);
 		}
 		
-		if(message->mtype == 1) {	//Update DB
+		if(message.mtype == 1) {	//Update DB
 			char accountNumber[5]; 
 			char PIN[3];
-			char *amountOfFunds = {'\0'};
+			char amountOfFunds[100];
 
 			for(i = 0; i < 5; i++) {
-				accountNumber[i] = message->mtext[i];
+				accountNumber[i] = message.mtext[i];
 			}
 			
 			for(i = 0; i < 3; i++) {
-				PIN[i] = message->mtext[i+5];
+				PIN[i] = message.mtext[i+5];
 			}
 			
 			//Convert back to float in updateDatabase
-			for(i = 0; i < sizeof(message->mtext); i++) {
-				amountOfFunds[i] = message->mtext[i+8];
+			for(i = 0; i < sizeof(message.mtext); i++) {
+				amountOfFunds[i] = message.mtext[i+8];
 			}
 			
 			updateDatabase(accountNumber, PIN, amountOfFunds); 
