@@ -38,7 +38,9 @@ int main() {
 	initialize(accounts); 
 	pthread_t server;
 
-	pthread_create(&server, NULL, dbServer, (void*)NULL); 
+	pthread_attr_t attr;
+	pthread_attr_init(&attr); 
+	pthread_create(&server, &attr, dbServer, NULL); 
 	
 	pthread_join(server, NULL); 
 	
@@ -138,6 +140,7 @@ void* dbServer(void *arg) {
 			
 		}	
 	}
+	pthread_exit(0); 
 	
 }
 

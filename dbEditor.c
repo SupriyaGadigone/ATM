@@ -82,8 +82,7 @@ void* dbEditor(void* arg) {
 	key_t serverKey = 1234;
 	int msgflg = 0666 | IPC_CREAT; // message flag
 	
-	msg *message = NULL; 
-	message->mtype = 1; // Update DB message
+	msg *message; 
 	int editorID;
 	
 	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
@@ -91,6 +90,8 @@ void* dbEditor(void* arg) {
 		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
 		exit(1);
 	}
+	
+	message->mtype = 1; // Update DB message
 	
 	if((editorID = msgget(serverKey, msgflg)) < 0)
 	{
@@ -121,6 +122,7 @@ void* dbEditor(void* arg) {
 		{
 			perror ("Update DB message failed");
 		}
-	}	
+	}
+	pthread_exit(0); 	
 	
 }
