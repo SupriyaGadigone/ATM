@@ -34,11 +34,12 @@ void populateDB();
 void* dbEditor(void* arg);
 void* dbServer(void *arg);
 
-int main() {
+int main() {	
 	initialize(accounts); 
+	
 	pthread_t editor;
 	pthread_create(&editor, NULL, dbEditor, (void*)NULL);
-	pthread_join(editor, NULL);  
+    pthread_join(editor, NULL);
 	
 	return 0; 
 }
@@ -79,13 +80,19 @@ void populateDB() {
 
 void* dbEditor(void* arg) {
 	key_t serverKey = 1234;
-	int msgflg = IPC_CREAT | 0666; // message flag
+	int msgflg = 0666 | IPC_CREAT; // message flag
 	
 	msg *message = NULL; 
 	message->mtype = 1; // Update DB message
 	int editorID;
 	
-	if((editorID = msgget(serverKey, 0666))	< 0)
+	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
+    if (message == NULL) {
+		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
+		exit(1);
+	}
+	
+	if((editorID = msgget(serverKey, msgflg)) < 0)
 	{
 		perror("msgget");
 		exit(1);
@@ -115,4 +122,5 @@ void* dbEditor(void* arg) {
 			perror ("Update DB message failed");
 		}
 	}	
+	
 }
