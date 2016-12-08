@@ -102,7 +102,7 @@ void* dbEditor(void* arg) {
 	for(;;) {
 		char accountNumber[5] = {'\0'};
 		char PIN[3] = {'\0'};
-		char *amountOfFunds = "\0";
+		char amountOfFunds[100] = {'\0'};
 
 		printf("\nPlease enter an account number (5 digits) \n");	
 		scanf("%s", accountNumber);	
@@ -112,7 +112,7 @@ void* dbEditor(void* arg) {
 		
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
 		scanf("%s", amountOfFunds);
-		
+
 		strcpy(message->mtext, accountNumber); 
 		strcat(message->mtext, PIN);
 		strcat(message->mtext, amountOfFunds);

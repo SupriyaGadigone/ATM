@@ -37,13 +37,10 @@ void* dbServer(void *arg);
 int main() {
 	initialize(accounts); 
 	pthread_t server;
-
-	pthread_attr_t attr;
-	pthread_attr_init(&attr); 
-	pthread_create(&server, &attr, dbServer, NULL); 
-	
-	pthread_join(server, NULL); 
-	
+ 
+	pthread_create(&server, NULL, dbServer, (void*)NULL);
+	pthread_join(server, NULL);  
+		
 	return 0; 
 }
 
@@ -137,6 +134,7 @@ void* dbServer(void *arg) {
 			}
 			
 			updateDatabase(accountNumber, PIN, amountOfFunds); 
+			printQueue(accounts); 
 			
 		}	
 	}
