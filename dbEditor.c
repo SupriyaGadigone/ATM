@@ -38,9 +38,9 @@ int main() {
 void* dbEditor(void* arg) {
 	key_t serverKey = 1234;
 	int msgflg = 0666 | IPC_CREAT; // message flag
-	
+	int serverID;
 	msg *message; 
-	int editorID;
+	
 	
 	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
     if (message == NULL) {
@@ -50,7 +50,7 @@ void* dbEditor(void* arg) {
 	
 	message->mtype = 1; // Update DB message
 	
-	if((editorID = msgget(serverKey, msgflg)) < 0)
+	if((serverID = msgget(serverKey, msgflg)) < 0)
 	{
 		perror("msgget");
 		exit(1);
@@ -75,7 +75,7 @@ void* dbEditor(void* arg) {
 		strcat(message->mtext, amountOfFunds);
 		
 		//sending a message
-		if(msgsnd(editorID, message, sizeof(msg), msgflg) == -1)
+		if(msgsnd(serverID, message, sizeof(msg), msgflg) == -1)
 		{
 			perror ("Update DB message failed");
 		}

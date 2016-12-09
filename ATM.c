@@ -37,16 +37,19 @@ int main() {
 }
 
 void* atm(void* arg) {
-	char accountNumber[5];
-	char PIN[3];
+	char accountNumber[5] = {'\0'};
+	char PIN[3] = {'\0'};
 	int numLogin = 0;
 	bool valid = false;
 		
 	int serverID;
 	int msgflg = IPC_CREAT | 0666;
-	key_t serverKey = 1234;
+	//key_t serverKey = 1234;
+	key_t atmKey = 5678;
 	
-	msg message;
+	
+	msg *message;
+	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
 	
 	while(1) {
 		printf("\nPlease enter an account number (5 digits) \n");	
@@ -56,28 +59,30 @@ void* atm(void* arg) {
 			printf("\nPlease enter your PIN number (3 digits) \n");	
 			scanf("%s", PIN);
 			
-			strcpy(message.mtext,accountNumber);
-			strcat(message.mtext,PIN);
-			message.mtype = 2; // Customer login
+			strcpy(message->mtext,accountNumber);
+			strcat(message->mtext,PIN);
 			
-			if((serverID = msgget(serverKey, msgflg)) < 0) {
+			message->mtype = 2; // Customer login
+			if((serverID = msgget(atmKey, msgflg)) < 0) {
 				perror("msgget"); 
 				exit(1); 
 			}
 			
-			if(msgsnd(serverID, &message, strlen(message.mtext) + 1, 0) < 0) {
+			
+			if(msgsnd(serverID, message, strlen(message->mtext) + 1, 0) < 0) {
 				perror("msgsnd"); 
 				exit(1); 
 			}
 			
-			if(msgrcv(serverID, &message, strlen(message.mtext) + 1, 2, 0) < 0) // receive OK or NOT OK message
+			if(msgrcv(serverID, message, strlen(message->mtext) + 1, 2, 0) < 0) // receive OK or NOT OK message
 			{
 				perror("msrcv");
 				exit(1);
 			}
 			
-			if(strcmp(message.mtext, "OK") == 0) {
+			if(strcmp(message->mtext, "OK") == 0) {
 				valid = true; 
+				
 			}
 			else {
 				numLogin++; 

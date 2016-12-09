@@ -44,7 +44,7 @@ int main() {
 }
 
 void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) {
-	database = fopen("dataBase.txt", "w");
+	database = fopen("dataBase.txt", "a");
 	//make sure appends
 	if(database == NULL) {
 		printf("Error opening file!\n");
@@ -107,12 +107,13 @@ void populateDB() {
 }
 
 void* dbServer(void *arg) {
-	key_t serverKey = 1234;
 	key_t atmKey = 5678;
+	key_t serverKey = 1234;
+	
 	int msgflg = IPC_CREAT | 0666;
 	
-	int serverID;
 	int atmID; 
+	int editorID;
 	
 	msg message; 
 	int i;
@@ -126,7 +127,7 @@ void* dbServer(void *arg) {
 	}
 	*/
 	
-	if((serverID = msgget(serverKey, msgflg))	< 0)	// message queue for editor
+	if((editorID = msgget(serverKey, msgflg))	< 0)	// message queue for editor
 	{
 		perror("msgget for server failed");
 		exit(1);
@@ -139,8 +140,13 @@ void* dbServer(void *arg) {
 	}
 	
 	for(;;) {
-		msgrcv(serverID, &message, sizeof(msg), 1, IPC_NOWAIT); // receive Update DB message
-		msgrcv(atmID, &message, sizeof(msg), 2, IPC_NOWAIT); 
+		msgrcv(editorID, &message, sizeof(msg), 1, IPC_NOWAIT); // receive Update DB message
+		if(msgrcv(atmID, &message, sizeof(msg) , 2, IPC_NOWAIT) >0)
+		{
+			perror("msgrcv: atm worked");
+		}
+		
+
 		
 		if(message.mtype == 1) {	//Update DB
 			char accountNumber[5]; 
@@ -166,7 +172,7 @@ void* dbServer(void *arg) {
 			
 		}
 		
-		else if(message.mtype == 2) {
+		else if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
 			char accountNumber[5]; 
 			char PIN[3];
 			
@@ -187,7 +193,7 @@ void* dbServer(void *arg) {
 				}
 				temp = temp->next; 
 			}
-			
+			printf("got here");
 			if(check) {
 				strcpy(message.mtext, "OK"); 
 			}
