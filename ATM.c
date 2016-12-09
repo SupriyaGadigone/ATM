@@ -1,5 +1,5 @@
 /**
-	Database Editor
+	Database server
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone
@@ -44,7 +44,7 @@ int main() {
 	return 0; 
 }
 
-void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100]) {
+void updateDatabase(char accountNumber[6], char PIN[4], char amountOfFunds[100]) {
 	database = fopen("dataBase.txt", "w");
 	if(database == NULL) {
 		printf("Error opening file!\n");
@@ -52,8 +52,13 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100])
 	}
 	
 	fprintf(database, "%s,", accountNumber);
-	fprintf(database, "%s,", PIN);
-	fprintf(database, "%s,", amountOfFunds);   
+	int i;
+	for(i = 0; i < 3; i++) {
+		fprintf(database, "%c", PIN[i]);
+	}
+	fprintf(database,",");
+	//fprintf(database, "%s,", PIN);
+	fprintf(database, "%s", amountOfFunds);   
 	fprintf(database, "\n"); 
 	
 	fclose(database); 
@@ -139,7 +144,7 @@ void* dbServer(void *arg) {
 			}
 			
 			updateDatabase(accountNumber, PIN, amountOfFunds); 
-			printQueue(accounts); 
+			//printQueue(accounts); 
 			
 		}	
 	}

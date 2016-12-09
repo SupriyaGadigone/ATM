@@ -100,8 +100,8 @@ void* dbEditor(void* arg) {
 	}
 	
 	for(;;) {
-		char accountNumber[6] = {'\0'};
-		char PIN[4] = {'\0'};
+		char accountNumber[5] = {'\0'};
+		char PIN[3] = {'\0'};
 		char amountOfFunds[100] = {'\0'};
 
 		printf("\nPlease enter an account number (5 digits) \n");	

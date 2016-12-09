@@ -4,8 +4,8 @@
 #define MSGSZ 128
 
 typedef struct account {
-	char accountNumber[5];
-	char PIN[3];
+	char accountNumber[6];
+	char PIN[4];
 	float amountOfFunds;
 	struct account *next; 
 } account;
