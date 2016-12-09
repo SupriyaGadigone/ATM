@@ -25,57 +25,14 @@ typedef struct msg {
    char mtext[MSGSZ]; //size of the msg
  } msg; 
 
-bank *accounts;
-int numOfAccounts = 0;
-FILE* database; 
-
-void updateDatabase(char accountNumber[5], char PIN[3], char *amountOfFunds);
-void populateDB();
 void* dbEditor(void* arg);
-void* dbServer(void *arg);
 
 int main() {	
-	initialize(accounts); 
-	
 	pthread_t editor;
 	pthread_create(&editor, NULL, dbEditor, (void*)NULL);
     pthread_join(editor, NULL);
 	
 	return 0; 
-}
-
-void populateDB() {
-	char *token;
-	char *data;
-	int counter = 0; 
-	const char delimeter[2] = ","; 
-	account *temp = NULL;
-	
-	database = fopen("dataBase.txt", "r");
-	char line[256];
-	
-	while(fgets(line, sizeof(line), database)) {
-		data = line; 
-		token = strtok(data, delimeter);
-		while( token != NULL ) 
-		{
-			if(counter == 0) {
-				strncpy(temp->accountNumber, token, 5);
-			}
-			else if(counter == 1) {
-				strncpy(temp->PIN, token, 3);
-			}
-			else if(counter == 2) {
-				float f = atof(token);
-				temp->amountOfFunds = f; 
-			}
-			token = strtok(NULL, delimeter);
-			counter++;
-		}
-		enqueue(accounts, temp); 
-		counter = 0; 
-	}
-	fclose(database); 	
 }
 
 void* dbEditor(void* arg) {

@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <stdbool.h>
 #include "queue.c" 
 #define MSGSZ 128
 
@@ -25,130 +26,66 @@ typedef struct msg {
    char mtext[MSGSZ]; //size of the msg
  } msg; 
 
-bank *accounts;
-int numOfAccounts = 0;
-FILE* database; 
-
-void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100]);
-void populateDB();
-void* dbEditor(void* arg);
-void* dbServer(void *arg);
+void* atm(void* arg);
 
 int main() {
-	initialize(accounts); 
-	pthread_t server;
- 
-	pthread_create(&server, NULL, dbServer, (void*)NULL);
-	pthread_join(server, NULL);  
+	pthread_t atMachine; 
+	pthread_create(&atMachine, NULL, atm, (void*)NULL);
+	pthread_join(atMachine, NULL); 
 		
 	return 0; 
 }
 
-void updateDatabase(char accountNumber[6], char PIN[4], char amountOfFunds[100]) {
-	database = fopen("dataBase.txt", "w");
-	if(database == NULL) {
-		printf("Error opening file!\n");
-		exit(1);
-	}
-	
-	fprintf(database, "%s,", accountNumber);
-	int i;
-	for(i = 0; i < 3; i++) {
-		fprintf(database, "%c", PIN[i]);
-	}
-	fprintf(database,",");
-	//fprintf(database, "%s,", PIN);
-	fprintf(database, "%s", amountOfFunds);   
-	fprintf(database, "\n"); 
-	
-	fclose(database); 
-}
-
-void populateDB() {
-	char *token;
-	char *data;
-	int counter = 0; 
-	const char delimeter[2] = ","; 
-	account *temp = NULL;
-	
-	database = fopen("dataBase.txt", "r");
-	char line[256];
-	
-	while(fgets(line, sizeof(line), database)) {
-		data = line; 
-		token = strtok(data, delimeter);
-		while( token != NULL ) 
-		{
-			if(counter == 0) {
-				strncpy(temp->accountNumber, token, 5);
-			}
-			else if(counter == 1) {
-				strncpy(temp->PIN, token, 3);
-			}
-			else if(counter == 2) {
-				float f = atof(token);
-				temp->amountOfFunds = f; 
-			}
-			token = strtok(NULL, delimeter);
-			counter++;
-		}
-		enqueue(accounts, temp); 
-		counter = 0; 
-	}
-	fclose(database); 	
-}
-
-void* dbServer(void *arg) {
-	key_t serverKey = 1234;
-	int serverID;
-	msg message; 
-	int i;  
-	
-	/*
-	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
-    if (message == NULL) {
-		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
-		exit(1);
-	}
-	*/
-	
-	if((serverID = msgget(serverKey, 0666))	< 0)
-	{
-		perror("msgget for server failed");
-		exit(1);
-	}
-	
-	for(;;) {
-		if(msgrcv (serverID, &message, sizeof(msg), 1, 0) < 0) // receive Update DB message
-		{
-			perror("msrcv");
-			exit(1);
-		}
+void* atm(void* arg) {
+	char accountNumber[5];
+	char PIN[3];
+	int numLogin = 0;
+	bool valid = false;
 		
-		if(message.mtype == 1) {	//Update DB
-			char accountNumber[5]; 
-			char PIN[3];
-			char amountOfFunds[100];
-
-			for(i = 0; i < 5; i++) {
-				accountNumber[i] = message.mtext[i];
-			}
-			
-			for(i = 0; i < 3; i++) {
-				PIN[i] = message.mtext[i+5];
-			}
-			
-			//Convert back to float in updateDatabase
-			for(i = 0; i < sizeof(message.mtext); i++) {
-				amountOfFunds[i] = message.mtext[i+8];
-			}
-			
-			updateDatabase(accountNumber, PIN, amountOfFunds); 
-			//printQueue(accounts); 
-			
-		}	
-	}
-	pthread_exit(0); 
+	int serverID;
+	int msgflg = IPC_CREAT | 0666;
+	key_t serverKey = 1234;
 	
+	msg message;
+	
+	while(1) {
+		printf("\nPlease enter an account number (5 digits) \n");	
+		scanf("%s", accountNumber);	
+		
+		while(valid == false && numLogin < 3) {
+			printf("\nPlease enter your PIN number (3 digits) \n");	
+			scanf("%s", PIN);
+			
+			strcpy(message.mtext,accountNumber);
+			strcat(message.mtext,PIN);
+			message.mtype = 2; // Customer login
+			
+			if((serverID = msgget(serverKey, msgflg)) < 0) {
+				perror("msgget"); 
+				exit(1); 
+			}
+			
+			if(msgsnd(serverID, &message, strlen(message.mtext) + 1, 0) < 0) {
+				perror("msgsnd"); 
+				exit(1); 
+			}
+			
+			if(msgrcv(serverID, &message, strlen(message.mtext) + 1, 2, 0) < 0) // receive OK or NOT OK message
+			{
+				perror("msrcv");
+				exit(1);
+			}
+			
+			if(strcmp(message.mtext, "OK") == 0) {
+				valid = true; 
+			}
+			else {
+				numLogin++; 
+			}
+		}
+		// LOCK THE ATM L8	
+
+	}
+	pthread_exit(0);  	
 }
 
