@@ -12,7 +12,7 @@ typedef struct account {
 
 typedef struct bank {
 	account *front;
-	account *back; 
+	account *back ;
 } bank;  
  
 void initialize(bank *accounts);

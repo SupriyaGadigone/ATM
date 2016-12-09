@@ -30,7 +30,7 @@ bank *accounts;
 int numOfAccounts = 0;
 FILE* database; 
 
-void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100]);
+void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]);
 void populateDB();
 void* dbServer(void *arg);
 
@@ -43,7 +43,7 @@ int main() {
 	return 0; 
 }
 
-void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100]) {
+void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) {
 	database = fopen("dataBase.txt", "w");
 	if(database == NULL) {
 		printf("Error opening file!\n");
@@ -62,11 +62,13 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[100])
 	
 	fclose(database); 
 	
-	account *temp = NULL; 
+	account *temp; 
+	temp = (account *)malloc(sizeof(account));
 	strcpy(temp->accountNumber, accountNumber); 
 	strcpy(temp->PIN, PIN); 
 	temp->amountOfFunds = atof(amountOfFunds);  
-	enqueue(accounts, temp); 
+	enqueue(accounts, temp);
+	 
 }
 
 void populateDB() {
@@ -129,20 +131,20 @@ void* dbServer(void *arg) {
 		exit(1);
 	}
 	
-	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
-	{
-		perror("msgget for server failed");
-		exit(1);
-	}
+//	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
+//	{
+//		perror("msgget for server failed");
+//		exit(1);
+//	}
 	
 	for(;;) {
 		msgrcv(serverID, &message, sizeof(msg), 1, IPC_NOWAIT); // receive Update DB message
-		msgrcv(atmID, &message, sizeof(msg), 2, IPC_NOWAIT); 
+		//msgrcv(atmID, &message, sizeof(msg), 2, IPC_NOWAIT); 
 		
 		if(message.mtype == 1) {	//Update DB
 			char accountNumber[5]; 
 			char PIN[3];
-			char amountOfFunds[100];
+			char amountOfFunds[10];
 
 			for(i = 0; i < 5; i++) {
 				accountNumber[i] = message.mtext[i];
@@ -156,6 +158,7 @@ void* dbServer(void *arg) {
 			for(i = 0; i < sizeof(message.mtext); i++) {
 				amountOfFunds[i] = message.mtext[i+8];
 			}
+			
 			
 			updateDatabase(accountNumber, PIN, amountOfFunds); 
 			//printQueue(accounts); 
@@ -173,8 +176,8 @@ void* dbServer(void *arg) {
 			for(i = 0; i < 3; i++) {
 				PIN[i] = message.mtext[i+3]; 
 			}
-			accountNumber[5] = '\0';
-			PIN[3] = '\0';
+			//accountNumber[5] = '\0';
+			//PIN[3] = '\0';
 			
 			account *temp = accounts->front;
 			while (temp != NULL) {

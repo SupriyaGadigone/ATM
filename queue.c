@@ -4,10 +4,11 @@
  * C Program to Implement Queue Data Structure using Linked List
  */
 
-#include "queue.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "queue.h"
 #define MSGSZ 128
 
 
@@ -19,13 +20,16 @@ void initialize(bank *accounts) {
 }
 
 void enqueue(bank *accounts, account *acc) {
-	account *temp;
-	temp = (account *)malloc(sizeof(acc));
+	accounts = (bank *)malloc(sizeof(bank));
+   accounts->front = NULL;
+   accounts->back = NULL;
+	account *temp = (account *)malloc(sizeof(acc));
 	temp = acc;
-	
+
 	if (accounts->back == NULL) {
-		accounts->front = accounts->back = temp;
-    } else {
+		 accounts->front = temp;
+		 accounts->back = temp;
+    }else {
 		accounts->back->next = temp;
         accounts->back = temp;
     }
