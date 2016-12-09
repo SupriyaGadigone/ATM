@@ -50,17 +50,10 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) 
 		printf("Error opening file!\n");
 		exit(1);
 	}
-	
+
 	fprintf(database, "%s,", accountNumber);
-	int i;
-	for(i = 0; i < 3; i++) {
-		fprintf(database, "%c", PIN[i]);
-	}
-	fprintf(database,",");
-	//fprintf(database, "%s,", PIN);
-	fprintf(database, "%s", amountOfFunds);   
-	fprintf(database, "\n"); 
-	
+	fprintf(database, "%s,", PIN);
+	fprintf(database, "%s\n", amountOfFunds);  
 	fclose(database); 
 	
 	account *temp; 
@@ -162,7 +155,7 @@ void* dbServer(void *arg) {
 			}
 			
 			//Convert back to float in updateDatabase
-			for(i = 0; i < sizeof(message.mtext); i++) {
+			for(i = 0; i < 10; i++) {
 				amountOfFunds[i] = message.mtext[i+8];
 			}
 			
