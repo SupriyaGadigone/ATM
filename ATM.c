@@ -1,5 +1,5 @@
 /**
-	Database server
+	ATM
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone

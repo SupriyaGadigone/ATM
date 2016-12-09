@@ -20,9 +20,7 @@ void initialize(bank *accounts) {
 }
 
 void enqueue(bank *accounts, account *acc) {
-	accounts = (bank *)malloc(sizeof(bank));
-   accounts->front = NULL;
-   accounts->back = NULL;
+    accounts = (bank *)malloc(sizeof(bank));
 	account *temp = (account *)malloc(sizeof(acc));
 	temp = acc;
 
