@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include "queue.c" 
+
 #define MSGSZ 128
 
 typedef struct msg {

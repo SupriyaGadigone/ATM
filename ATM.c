@@ -18,7 +18,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <stdbool.h>
-#include "queue.c" 
+
 #define MSGSZ 128
 
 typedef struct msg {
