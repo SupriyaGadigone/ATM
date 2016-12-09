@@ -45,6 +45,7 @@ int main() {
 
 void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) {
 	database = fopen("dataBase.txt", "w");
+	//make sure appends
 	if(database == NULL) {
 		printf("Error opening file!\n");
 		exit(1);
@@ -131,15 +132,15 @@ void* dbServer(void *arg) {
 		exit(1);
 	}
 	
-//	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
-//	{
-//		perror("msgget for server failed");
-//		exit(1);
-//	}
+	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
+	{
+		perror("msgget for server failed");
+		exit(1);
+	}
 	
 	for(;;) {
 		msgrcv(serverID, &message, sizeof(msg), 1, IPC_NOWAIT); // receive Update DB message
-		//msgrcv(atmID, &message, sizeof(msg), 2, IPC_NOWAIT); 
+		msgrcv(atmID, &message, sizeof(msg), 2, IPC_NOWAIT); 
 		
 		if(message.mtype == 1) {	//Update DB
 			char accountNumber[5]; 
@@ -176,8 +177,8 @@ void* dbServer(void *arg) {
 			for(i = 0; i < 3; i++) {
 				PIN[i] = message.mtext[i+3]; 
 			}
-			//accountNumber[5] = '\0';
-			//PIN[3] = '\0';
+			accountNumber[5] = '\0';
+			PIN[3] = '\0';
 			
 			account *temp = accounts->front;
 			while (temp != NULL) {
