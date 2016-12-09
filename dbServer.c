@@ -133,8 +133,8 @@ void* dbServer(void *arg) {
 	}
 	
 	for(;;) {
-		msgrcv(editorID, &message, sizeof(msg), 1, IPC_NOWAIT); // receive Update DB message
-		if(msgrcv(atmID, &message, sizeof(msg) , 2, IPC_NOWAIT) >0)
+		msgrcv(editorID, &message, sizeof(msg), 1, 0); // receive Update DB message
+		if(msgrcv(atmID, &message, sizeof(msg) , 2, 0) >0)
 		{
 			perror("msgrcv: atm worked");
 		}
@@ -195,7 +195,7 @@ void* dbServer(void *arg) {
 			}
 			
 			message.mtype = 3; // Confirm/Revoke login
-			if(msgsnd(atmID, &message, strlen(message.mtext) + 1, 0) < 0) {
+			if(msgsnd(atmID, &message, strlen(message.mtext) + 1, IPC_NOWAIT) < 0) {
 				perror("msgsnd confirm");
 				exit(1); 
 			}

@@ -75,7 +75,7 @@ void* dbEditor(void* arg) {
 		strcat(message->mtext, amountOfFunds);
 		
 		//sending a message
-		if(msgsnd(serverID, message, sizeof(msg), msgflg) == -1)
+		if(msgsnd(serverID, message, sizeof(msg), IPC_NOWAIT) == -1)
 		{
 			perror ("Update DB message failed");
 		}
