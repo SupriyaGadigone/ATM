@@ -116,6 +116,7 @@ void* dbServer(void *arg) {
 	int editorID;
 	
 	msg message; 
+	msg message2; 
 	int i;
 	bool check = false; 
 	
@@ -141,10 +142,7 @@ void* dbServer(void *arg) {
 	
 	for(;;) {
 		msgrcv(editorID, &message, sizeof(msg), 1, IPC_NOWAIT); // receive Update DB message
-		if(msgrcv(atmID, &message, sizeof(msg) , 2, IPC_NOWAIT) >0)
-		{
-			perror("msgrcv: atm worked");
-		}
+		msgrcv(atmID, &message2, sizeof(msg) , 2, IPC_NOWAIT) ;
 		
 
 		
@@ -178,10 +176,10 @@ void* dbServer(void *arg) {
 			
 			int i; 
 			for(i = 0; i < 5; i++) {
-				accountNumber[i] = message.mtext[i];
+				accountNumber[i] = message2.mtext[i];
 			}
 			for(i = 0; i < 3; i++) {
-				PIN[i] = message.mtext[i+3]; 
+				PIN[i] = message2.mtext[i+3]; 
 			}
 			accountNumber[5] = '\0';
 			PIN[3] = '\0';
@@ -195,14 +193,14 @@ void* dbServer(void *arg) {
 			}
 			printf("got here");
 			if(check) {
-				strcpy(message.mtext, "OK"); 
+				strcpy(message2.mtext, "OK"); 
 			}
 			else {
-				strcpy(message.mtext, "NOT OK"); 
+				strcpy(message2.mtext, "NOT OK"); 
 			}
 			
 			message.mtype = 3; // Confirm/Revoke login
-			if(msgsnd(atmID, &message, strlen(message.mtext) + 1, 0) < 0) {
+			if(msgsnd(atmID, &message2, strlen(message.mtext) + 1, 0) < 0) {
 				perror("msgsnd confirm");
 				exit(1); 
 			}
