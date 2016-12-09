@@ -109,7 +109,7 @@ void populateDB() {
 }
 
 void* dbServer(void *arg) {
-	//key_t atmKey = 5678;
+	//key_t editorKey = 5678;
 	key_t serverKey = 1234;
 	
 	int msgflg = IPC_CREAT | 0666;
@@ -174,20 +174,22 @@ void* dbServer(void *arg) {
 void* atm(void *arg)
 {
 	key_t atmKey = 5678;
+	key_t serverKey = 1111;
 	
 	int msgflg = IPC_CREAT | 0666;
 	int atmID; 
+	int serverID;
 	
 	bool check = false; 
 	
 	
-	msg *message;
+	msg message;
 	
-	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
-    if (message == NULL) {
+	//message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
+   /* if (message == NULL) {
 		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
 		exit(1);
-	}
+	}*/
 	
 	
 	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
@@ -195,49 +197,63 @@ void* atm(void *arg)
 		perror("msgget for server failed");
 		exit(1);
 	}
-	for(;;){
-	if(msgrcv(atmID, &message, sizeof(msg) , 2, 0) >0)
-	{
-		perror("msgrcv: atm worked");
-			
-	}
 	
-			if(message->mtype == 2) { //check if PIN and accountnumber are valid or not
-			char accountNumber[5]; 
-			char PIN[3];
-			
-			int i; 
-			for(i = 0; i < 5; i++) {
-				accountNumber[i] = message->mtext[i];
-			}
-			for(i = 0; i < 3; i++) {
-				PIN[i] = message->mtext[i+3]; 
-			}
-			accountNumber[5] = '\0';
-			PIN[3] = '\0';
-			
-			account *temp = accounts->front;
-			while (temp != NULL) {
-				if(strcmp(temp->accountNumber, accountNumber) == 0 && strcmp(temp->PIN, PIN) == 0) {
-					check = true; 
-				}
-				temp = temp->next; 
-			}
-			printf("got here");
-			if(check) {
-				strcpy(message->mtext, "OK"); 
-			}
-			else {
-				strcpy(message->mtext, "NOT OK"); 
-			}
-			
-			message->mtype = 3; // Confirm/Revoke login
-			if(msgsnd(atmID, &message, strlen(message->mtext) + 1, IPC_NOWAIT) < 0) {
-				perror("msgsnd confirm");
-				exit(1); 
-			}
-		}
+	if((serverID = msgget(serverKey, msgflg))	< 0)		// message queue for ATM
+	{
+		perror("msgget for server2 failed");
+		exit(1);
 	}
+	//message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
+	for(;;){
+		
+		if(msgrcv(serverID, &message, 1000, 2, 0) >0)
+		{
+			perror("msgrcv: atm worked");
+				
+		}
+	
+				if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
+				
+				char accountNumber[5]; 
+				char PIN[3];
+				
+				int i; 
+				for(i = 0; i < 5; i++) {
+					accountNumber[i] = message.mtext[i];
+				}
+				for(i = 0; i < 3; i++) {
+					PIN[i] = message.mtext[i+3]; 
+				}
+				accountNumber[5] = '\0';
+				PIN[3] = '\0';
+				
+				
+				
+				account *temp = accounts->front;
+				while (temp != NULL) {
+					if(strcmp(temp->accountNumber, accountNumber) == 0 && strcmp(temp->PIN, PIN) == 0) {
+						check = true; 
+					}
+					temp = temp->next; 
+				}
+				printf("got here");
+				if(check) {
+					strcpy(message.mtext, "OK"); 
+				}
+				else {
+					strcpy(message.mtext, "NOT OK"); 
+				}
+				perror("2");
+				message.mtype = 3; // Confirm/Revoke login
+				if(msgsnd(atmID, &message, sizeof(msg), 0) > 0) {
+					perror("msgsnd to atm worked");
+					exit(1); 
+				}
+			}
+			
+	
+	}
+	pthread_exit(0);
 }
 
 
