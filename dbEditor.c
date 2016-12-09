@@ -3,67 +3,63 @@
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone
+	
+	TO COMPILE: 
+	* gcc ATM.c -o ATM -lpthread
 **/
 
 #include <stdlib.h>
-#include <sys/ipc.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h> 
+#include <assert.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
 #include <sys/msg.h>
-#include "queue.c"
-
+#include "queue.c" 
 #define MSGSZ 128
 
-void promptUser();
+typedef struct msg {
+   long mtype; //type of the msg
+   char mtext[MSGSZ]; //size of the msg
+ } msg; 
 
-msg_buff *buffer;
-long msgtyp = 1; 
-int msqid; //messageq id returned by the queue
-int msgflg = IPC_CREAT | 0666; // message flag
+void* dbEditor(void* arg);
 
-int main(int argc, char* argv[])						
-{	
+int main() {	
+	pthread_t editor;
+	pthread_create(&editor, NULL, dbEditor, (void*)NULL);
+    pthread_join(editor, NULL);
+	
+	return 0; 
+}
+
+void* dbEditor(void* arg) {
+	key_t serverKey = 1234;
+	int msgflg = 0666 | IPC_CREAT; // message flag
+	int serverID;
+	msg *message; 
 	
 	
-	initialize(buffer);
-	
-	
-    size_t buf_length; //buffer length
-    key_t key = 1234;
-    int maxmsgsz = MSGSZ;
-   
-        
-    buffer = (msg_buff *)malloc((unsigned)(sizeof(msg_buff) - sizeof buffer->front->mtext + maxmsgsz));
-    if (buffer == NULL) {
+	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
+    if (message == NULL) {
 		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
-		exit(1);
-    }
-    
-    //initializing the message queue
-    if((msqid = msgget(key, msgflg)) == -1) {
-		perror("msgget failed");
 		exit(1);
 	}
 	
-
-	promptUser();
-	return 0;
-}
-
-/**
-	Prompts the user for their account number, PIN and amount of funds to add to acocunt.
-*/
-void promptUser()
-{
+	message->mtype = 1; // Update DB message
+	
+	if((serverID = msgget(serverKey, msgflg)) < 0)
+	{
+		perror("msgget");
+		exit(1);
+	}
+	
 	for(;;) {
-		msg *mesg; 
-		mesg = (msg *)malloc(sizeof(msg));
-		
-		const char *mtext = "Update DB";
 		char accountNumber[5] = {'\0'};
 		char PIN[3] = {'\0'};
-		float amountOfFunds;
+		char amountOfFunds[10] = {'\0'};
 
 		printf("\nPlease enter an account number (5 digits) \n");	
 		scanf("%s", accountNumber);	
@@ -72,29 +68,18 @@ void promptUser()
 		scanf("%s", PIN);	
 		
 		printf("\nPlease enter amount of funds (precision = 2 decimals)\n");	
-		scanf("%f", &amountOfFunds);
-		
-		mesg->mtype = msgtyp;
-        strncpy(mesg->accountNumber, accountNumber, sizeof(accountNumber));
-        strncpy(mesg->PIN, PIN, sizeof(PIN));
-        strncpy(mesg->mtext, mtext, MSGSZ);
-		mesg->amountOfFunds = amountOfFunds; 
-		mesg->next = NULL; 
-		
-		enqueue(buffer, mesg); 
-		printQueue(buffer); 
+		scanf("%s", amountOfFunds);
+
+		strcpy(message->mtext, accountNumber); 
+		strcat(message->mtext, PIN);
+		strcat(message->mtext, amountOfFunds);
 		
 		//sending a message
-		if(msgsnd(msqid, buffer, MSGSZ, msgflg) == -1)
+		if(msgsnd(serverID, message, sizeof(msg), IPC_NOWAIT) == -1)
 		{
-			perror ("msgop: msgsnd failed");
+			perror ("Update DB message failed");
 		}
-	
-
 	}
+	pthread_exit(0); 	
+	
 }
-
-
-
-
-
