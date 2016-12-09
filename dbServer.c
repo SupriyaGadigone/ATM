@@ -33,19 +33,25 @@ FILE* database;
 void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]);
 void populateDB();
 void* dbServer(void *arg);
+void* atm(void *arg);
 
 int main() {
 	initialize(accounts); 
 	pthread_t server; 
+	pthread_t atm1;
+	
 	pthread_create(&server, NULL, dbServer, (void*)NULL);
+	pthread_create(&atm1, NULL, atm , (void*)NULL);
+	
 	pthread_join(server, NULL);  
+	pthread_join(atm1, NULL);  
 		
 	return 0; 
 }
 
 void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) {
 	database = fopen("dataBase.txt", "a");
-	//make sure appends
+
 	if(database == NULL) {
 		printf("Error opening file!\n");
 		exit(1);
@@ -54,6 +60,9 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) 
 	fprintf(database, "%s,", accountNumber);
 	fprintf(database, "%s,", PIN);
 	fprintf(database, "%s\n", amountOfFunds);  
+	
+	perror("updateDatabase");
+	
 	fclose(database); 
 	
 	account *temp; 
@@ -100,48 +109,40 @@ void populateDB() {
 }
 
 void* dbServer(void *arg) {
-	key_t atmKey = 5678;
+	//key_t atmKey = 5678;
 	key_t serverKey = 1234;
 	
 	int msgflg = IPC_CREAT | 0666;
 	
-	int atmID; 
+	//int atmID; 
 	int editorID;
 	
 	msg message; 
+
+	
+
 	int i;
-	bool check = false; 
+	//bool check = false; 
 	
-	/*
-	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
-    if (message == NULL) {
-		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
-		exit(1);
-	}
-	*/
 	
-	if((editorID = msgget(serverKey, msgflg))	< 0)	// message queue for editor
+	
+	if((editorID = msgget(serverKey, msgflg))< 0)	// message queue for editor
 	{
 		perror("msgget for server failed");
 		exit(1);
 	}
 	
-	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
-	{
-		perror("msgget for server failed");
-		exit(1);
-	}
+
 	
 	for(;;) {
-		msgrcv(editorID, &message, sizeof(msg), 1, 0); // receive Update DB message
-		if(msgrcv(atmID, &message, sizeof(msg) , 2, 0) >0)
+		if(msgrcv(editorID, &message, sizeof(msg), 1, 0)>0) // receive Update DB message
 		{
-			perror("msgrcv: atm worked");
+			perror("msgrcv: editor worked");
+			
 		}
-		
-
-		
+		 
 		if(message.mtype == 1) {	//Update DB
+
 			char accountNumber[5]; 
 			char PIN[3];
 			char amountOfFunds[10];
@@ -164,17 +165,53 @@ void* dbServer(void *arg) {
 			//printQueue(accounts); 
 			
 		}
-		
-		else if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
+	
+	}
+	pthread_exit(0); 
+	
+}
+
+void* atm(void *arg)
+{
+	key_t atmKey = 5678;
+	
+	int msgflg = IPC_CREAT | 0666;
+	int atmID; 
+	
+	bool check = false; 
+	
+	
+	msg *message;
+	
+	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
+    if (message == NULL) {
+		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
+		exit(1);
+	}
+	
+	
+	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
+	{
+		perror("msgget for server failed");
+		exit(1);
+	}
+	for(;;){
+	if(msgrcv(atmID, &message, sizeof(msg) , 2, 0) >0)
+	{
+		perror("msgrcv: atm worked");
+			
+	}
+	
+			if(message->mtype == 2) { //check if PIN and accountnumber are valid or not
 			char accountNumber[5]; 
 			char PIN[3];
 			
 			int i; 
 			for(i = 0; i < 5; i++) {
-				accountNumber[i] = message.mtext[i];
+				accountNumber[i] = message->mtext[i];
 			}
 			for(i = 0; i < 3; i++) {
-				PIN[i] = message.mtext[i+3]; 
+				PIN[i] = message->mtext[i+3]; 
 			}
 			accountNumber[5] = '\0';
 			PIN[3] = '\0';
@@ -188,21 +225,19 @@ void* dbServer(void *arg) {
 			}
 			printf("got here");
 			if(check) {
-				strcpy(message.mtext, "OK"); 
+				strcpy(message->mtext, "OK"); 
 			}
 			else {
-				strcpy(message.mtext, "NOT OK"); 
+				strcpy(message->mtext, "NOT OK"); 
 			}
 			
-			message.mtype = 3; // Confirm/Revoke login
-			if(msgsnd(atmID, &message, strlen(message.mtext) + 1, IPC_NOWAIT) < 0) {
+			message->mtype = 3; // Confirm/Revoke login
+			if(msgsnd(atmID, &message, strlen(message->mtext) + 1, IPC_NOWAIT) < 0) {
 				perror("msgsnd confirm");
 				exit(1); 
 			}
-		}	
+		}
 	}
-	pthread_exit(0); 
-	
 }
 
 
