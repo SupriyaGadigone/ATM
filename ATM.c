@@ -46,6 +46,7 @@ void* atm(void* arg) {
 	int atmID; 
 	int msgflg = IPC_CREAT | 0666;
 	int input;
+	char amount[100];
 	key_t serverKey = 1111;
 	key_t atmKey = 5678;
 	//key_t sevKey = 9101;
@@ -79,14 +80,14 @@ void* atm(void* arg) {
 			}
 			
 			
-			if(msgsnd(serverID, message, 1000, 0) == 0) {
-				perror("msgsnd to server from atm");  
+			if(msgsnd(serverID, message, 1000, 0) == -1) {
+				perror("msgsnd");  
 			}
 			
 			
-			if(msgrcv(atmID, message, 1000, 3, 0) > 0) // receive OK or NOT OK message
+			if(msgrcv(atmID, message, 1000, 3, 0) < 0) // receive OK or NOT OK message
 			{
-				perror("msrcv wroked*");
+				perror("msrcv");
 	
 			}
 	
@@ -100,21 +101,47 @@ void* atm(void* arg) {
 				case 1:
 					message->mtype = 4;
 					strcpy(message->mtext,accountNumber);
-					if(msgsnd(serverID, message, 1000, 0) == 0) 
+					if(msgsnd(serverID, message, 1000, 0) == -1) 
 					{
-						perror("msgsnd to server from atm of display funds");  
+						perror("msgsnd");  
 			        }
 					
 					
-					if(msgrcv(atmID, message, 1000, 3, 0) > 0) // receive OK or NOT OK message
+					if(msgrcv(atmID, message, 1000, 5, 0) < 0) // receive OK or NOT OK message
 					{
-						perror("msrcv wroked for display funds");
+						perror("msrcv");
 				    }
 				    
 				    printf("Funds in account: %s", message->mtext);
 				    perror(message->mtext);
 				    
 				    break;
+				    
+				case 2:
+				  printf("\nWithdrawal amount\n");	
+				  scanf("%s", amount);
+				  
+				  
+				    message->mtype = 6;
+					strcpy(message->mtext,accountNumber);
+					strcat(message->mtext,PIN);
+					strcat(message->mtext,amount);
+					
+					if(msgsnd(serverID, message, 1000, 0) == -1) 
+					{
+						perror("msgsnd");  
+			        }
+					
+					
+					if(msgrcv(atmID, message, 1000, 7, 0) < 0) 
+					{
+						perror("msrcv");
+				    }
+
+				    printf("%s", message->mtext);
+				    perror(message->mtext);
+				    
+				    break;    
 				}
 				
 			}
@@ -125,7 +152,7 @@ void* atm(void* arg) {
 			}
 			
 		}
-		// LOCK THE ATM L8	
+
 
 	}
 	pthread_exit(0);  	

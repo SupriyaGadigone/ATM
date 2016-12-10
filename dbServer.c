@@ -187,13 +187,6 @@ void* atm(void *arg)
 	
 	msg message;
 	
-	//message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
-   /* if (message == NULL) {
-		(void) fprintf(stderr, "msgop: %s %d byte messages.\n", "could not allocate message buffer for", MSGSZ);
-		exit(1);
-	}*/
-	
-	
 	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
 	{
 		perror("msgget for server failed");
@@ -208,17 +201,21 @@ void* atm(void *arg)
 	
 	for(;;){
 		
-		if(msgrcv(serverID, &message, 1000, 2, 0) >0)
+		if(msgrcv(serverID, &message, 1000, 2, 0) < 0)
 		{
-			perror("msgrcv: atm worked");	
+			perror("msgrcv");	
 		}
-		if(msgrcv(serverID, &message, 1000, 4, 0) >0)
+		if(msgrcv(serverID, &message, 1000, 4, 0) < 0)
 		{
-			perror("msgrcv: atm worked for display funds");	
+			perror("msgrcv");	
+		}
+		if(msgrcv(serverID, &message, 1000, 6, 0) < 0)
+		{
+			perror("msgrcv");	
 		}
 
-        perror(message.mtext);
-				if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
+
+		if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
 				
 				char accountNumber[5]; 
 				char PIN[3];
@@ -233,27 +230,12 @@ void* atm(void *arg)
 				accountNumber[5] = '\0';
 				PIN[3] = '\0';
                 
-				//account *temp = (account *)malloc((unsigned)(sizeof(account) - sizeof message.mtext + MSGSZ));
 				account *temp;
 				temp = accounts->front;
-				perror("*1");
-		        perror(accounts->front->accountNumber);
-				 perror("**2");
-					perror(temp->accountNumber);
-					perror("***3");
-					perror(accountNumber);
+	
 				while (temp != NULL) {
-					perror("ac**");
-					perror(accounts->front->accountNumber);
-					perror(accountNumber);
-					perror("end ac**");
-					perror("p**");
-					perror(accounts->front->PIN);
-					perror(PIN);
-					perror("end p**");
 					if(strcmp(temp->accountNumber, accountNumber) == 0 && strcmp(temp->PIN, PIN) == 0) {
 						check = 1; 
-						perror("got in if aya!");
 					}
 					temp = temp->next; 
 				}
@@ -265,9 +247,93 @@ void* atm(void *arg)
 				}
 
 				message.mtype = 3; // Confirm/Revoke login
-				if(msgsnd(atmID, &message, 1000, 0) == 0) {
-					perror("msgsnd to atm worked"); 
+				if(msgsnd(atmID, &message, 1000, 0) == -1) {
+					perror("msgsnd"); 
 				}
+			}
+			
+			if(message.mtype == 4) //display funds 
+			{
+				account *temp;
+				temp = accounts->front;
+				char mtext[5];
+				strcpy(mtext, message.mtext);
+				while (temp != NULL) {
+					if(strcmp(temp->accountNumber, mtext) == 0 ) {
+						printf("%f",temp->amountOfFunds);
+						
+						char str[80];
+						sprintf(str, "%f", temp->amountOfFunds);
+						strcpy(message.mtext, str);
+					}
+					temp = temp->next; 
+				}
+				message.mtype = 5;
+				if(msgsnd(atmID, &message, 1000, 0) == -1) {
+					perror("msgsnd"); 
+				}
+				
+			}
+			
+			if(message.mtype == 6) //withdrawfunds 
+			{
+				
+				char accountNumber[5]; 
+				char amount[10];
+				char PIN[3];
+				float a;
+				float balance;
+				
+				
+				int i; 
+				for(i = 0; i < 5; i++) {
+					accountNumber[i] = message.mtext[i];
+				}
+				for(i = 0; i < 3; i++) {
+					PIN[i] = message.mtext[i+5]; 
+				}
+				for(i = 0; i < 10; i++) {
+					amount[i] = message.mtext[i+8]; 
+				}
+				accountNumber[5] = '\0';
+				PIN[10] = '\0';
+				amount[10] = '\0';
+				
+				
+				a = strtof(amount, NULL);  //converting to float
+				
+				account *temp;
+				temp = accounts->front;
+	
+				while (temp != NULL) {
+					if(strcmp(temp->accountNumber, message.mtext) == 0 ) {
+						balance = temp->amountOfFunds;
+					}
+					temp = temp->next; 
+				}
+				if(balance < a)
+				{
+					strcpy(message.mtext, "NOT ENOUGH"); 
+					
+				}
+				else
+				{
+					strcpy(message.mtext, "ENOUGH FUNDS");
+					balance = balance - a;
+				}
+				
+				
+				char s[80];
+				sprintf(s, "%f", balance);
+				strcpy(message.mtext, s);
+				
+				updateDatabase(accountNumber, PIN, s);
+				
+				message.mtype = 7;
+				if(msgsnd(atmID, &message, 1000, 0) == -1) {
+					perror("msgsnd"); 
+				}
+				
 			}
 			
 			
