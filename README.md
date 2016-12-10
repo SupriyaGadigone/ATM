@@ -18,7 +18,6 @@ ATM.c - the atm interface
 - the server tells the atm whether those were valid
 - if valid, the atm prompts the user to either display or withdraw funds
 - if not, the PIN is reprompted for
-- if the account num and PIN is invalid 3x in a row, the account gets locked
 
 dataBase.txt
 - testfile which represents the database
@@ -43,3 +42,4 @@ You can then type into the atm to display/withdraw funds.
 
 The concurrency of the threads was tested by having three different terminals and update the database throught the editor while accessing the atm atm at the same time and seeing if the values were updated properly.  
 
+Known Issue: When run the program on my (Supriya's) computer, the program worked with minor bugs. But when tested on the lab computers the code didnt seem to run the same way. 
