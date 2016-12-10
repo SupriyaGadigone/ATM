@@ -205,9 +205,8 @@ void* atm(void *arg)
 		perror("msgget for server2 failed");
 		exit(1);
 	}
-	//message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
+	
 	for(;;){
-		
 		if(msgrcv(serverID, &message, 1000, 2, 0) >0)
 		{
 			perror("msgrcv: atm worked");	
@@ -227,7 +226,6 @@ void* atm(void *arg)
 				}
 				accountNumber[5] = '\0';
 				PIN[3] = '\0';
-				perror("1");
 
 				account *temp = accounts->front;
 				temp = (account *)malloc((unsigned)(sizeof(account) - sizeof message.mtext + MSGSZ));
@@ -237,16 +235,17 @@ void* atm(void *arg)
 					}
 					temp = temp->next; 
 				}
-				perror("2");
 				if(check) {
 					strcpy(message.mtext, "OK"); 
 				}
 				else {
 					strcpy(message.mtext, "NOT OK"); 
 				}
-				perror("2");
+
 				message.mtype = 3; // Confirm/Revoke login
-				if(msgsnd(atmID, &message, sizeof(msg), 0) > 0) {
+				perror("4");
+				strcpy(message.mtext, "NOT OK");
+				if(msgsnd(atmID, &message, 1000, 0) == 0) {
 					perror("msgsnd to atm worked");
 					exit(1); 
 				}

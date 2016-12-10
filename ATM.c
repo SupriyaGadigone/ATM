@@ -58,6 +58,9 @@ void* atm(void* arg) {
 		scanf("%s", accountNumber);	
 		
 		while(valid == false && numLogin < 3) {
+			printf("\nPlease enter an account number (5 digits) \n");	
+		    scanf("%s", accountNumber);	
+		    
 			printf("\nPlease enter your PIN number (3 digits) \n");	
 			scanf("%s", PIN);
 			
@@ -76,12 +79,13 @@ void* atm(void* arg) {
 			}
 			
 			
-			if(msgsnd(serverID, message, sizeof(msg) + 1, 0) < 0) {
-				perror("msgsnd"); 
+			if(msgsnd(serverID, message, 1000, 0) == 0) {
+				perror("msgsnd to server from atm"); 
 				exit(1); 
 			}
-		/*	
-			if(msgrcv(atmID, message, 1000, 2, 0) > 0) // receive OK or NOT OK message
+			
+			
+			if(msgrcv(atmID, message, 1000, 3, 0) > 0) // receive OK or NOT OK message
 			{
 				perror("msrcv wroked*");
 				exit(1);
@@ -94,7 +98,7 @@ void* atm(void* arg) {
 			else {
 				numLogin++; 
 			}
-			*/
+			
 		}
 		// LOCK THE ATM L8	
 
