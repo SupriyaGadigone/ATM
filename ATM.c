@@ -45,6 +45,7 @@ void* atm(void* arg) {
 	int serverID;
 	int atmID; 
 	int msgflg = IPC_CREAT | 0666;
+	int input;
 	key_t serverKey = 1111;
 	key_t atmKey = 5678;
 	//key_t sevKey = 9101;
@@ -89,12 +90,32 @@ void* atm(void* arg) {
 	
 			}
 	
-			perror(message->mtext);
 			
 			if(strcmp(message->mtext, "OK") == 0) {
-				
 				valid = true; 
-				perror(message->mtext);
+				printf("\nPress 1 to display funds and 2 to withdraw \n");	
+				scanf("%d", &input);
+				switch (input){
+					
+				case 1:
+					message->mtype = 4;
+					strcpy(message->mtext,accountNumber);
+					if(msgsnd(serverID, message, 1000, 0) == 0) 
+					{
+						perror("msgsnd to server from atm of display funds");  
+			        }
+					
+					
+					if(msgrcv(atmID, message, 1000, 3, 0) > 0) // receive OK or NOT OK message
+					{
+						perror("msrcv wroked for display funds");
+				    }
+				    
+				    printf("Funds in account: %s", message->mtext);
+				    perror(message->mtext);
+				    
+				    break;
+				}
 				
 			}
 			else {

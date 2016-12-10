@@ -212,6 +212,10 @@ void* atm(void *arg)
 		{
 			perror("msgrcv: atm worked");	
 		}
+		if(msgrcv(serverID, &message, 1000, 4, 0) >0)
+		{
+			perror("msgrcv: atm worked for display funds");	
+		}
 
         perror(message.mtext);
 				if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
@@ -254,19 +258,18 @@ void* atm(void *arg)
 					temp = temp->next; 
 				}
 				if(check == 1) {
-					perror("OKAY NOW AM DONE WITH THIS");
 					strcpy(message.mtext, "OK"); 
 				}
-				//else {
-				//	strcpy(message.mtext, "NOT OK"); 
-				//}
-				perror("come on!");
-				perror(message.mtext);
+				else {
+					strcpy(message.mtext, "NOT OK"); 
+				}
+
 				message.mtype = 3; // Confirm/Revoke login
 				if(msgsnd(atmID, &message, 1000, 0) == 0) {
 					perror("msgsnd to atm worked"); 
 				}
 			}
+			
 			
 	
 	}
