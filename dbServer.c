@@ -27,6 +27,7 @@ typedef struct msg {
  } msg; 
 
 bank *accounts;
+
 int numOfAccounts = 0;
 FILE* database; 
 
@@ -36,7 +37,8 @@ void* dbServer(void *arg);
 void* atm(void *arg);
 
 int main() {
-	initialize(accounts); 
+	accounts = (bank *)malloc(sizeof(bank));
+	//initialize(accounts); 
 	pthread_t server; 
 	pthread_t atm1;
 	
@@ -208,8 +210,7 @@ void* atm(void *arg)
 		
 		if(msgrcv(serverID, &message, 1000, 2, 0) >0)
 		{
-			perror("msgrcv: atm worked");
-				
+			perror("msgrcv: atm worked");	
 		}
 	
 				if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
@@ -226,17 +227,17 @@ void* atm(void *arg)
 				}
 				accountNumber[5] = '\0';
 				PIN[3] = '\0';
-				
-				
-				
+				perror("1");
+
 				account *temp = accounts->front;
+				temp = (account *)malloc((unsigned)(sizeof(account) - sizeof message.mtext + MSGSZ));
 				while (temp != NULL) {
 					if(strcmp(temp->accountNumber, accountNumber) == 0 && strcmp(temp->PIN, PIN) == 0) {
 						check = true; 
 					}
 					temp = temp->next; 
 				}
-				printf("got here");
+				perror("2");
 				if(check) {
 					strcpy(message.mtext, "OK"); 
 				}
