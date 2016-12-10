@@ -3,6 +3,7 @@
 
 #define MSGSZ 128
 
+// info in each account
 typedef struct account {
 	char accountNumber[6];
 	char PIN[4];
@@ -10,13 +11,11 @@ typedef struct account {
 	struct account *next; 
 } account;
 
+// accounts in the bank
 typedef struct bank {
 	account *front;
 	account *back ;
 } bank;  
  
-void initialize(bank *accounts);
 void enqueue(bank *accounts, account *acc);
-void dequeue(bank *accounts);
-void printQueue(bank *accounts);
 #endif

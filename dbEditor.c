@@ -1,11 +1,9 @@
 /**
-	Database Editor
+	Database Editor: prompts editor for new account info and sends this to server to add to the DB
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone
-	
-	TO COMPILE: 
-	* gcc ATM.c -o ATM -lpthread
+
 **/
 
 #include <stdlib.h>
@@ -35,12 +33,15 @@ int main() {
 	return 0; 
 }
 
+/*
+ * Prompts user for account number, pin and inital amount of funds 
+ * Function to send message to dbServer
+*/
 void* dbEditor(void* arg) {
 	key_t serverKey = 1234;
 	int msgflg = 0666 | IPC_CREAT; // message flag
 	int serverID;
 	msg *message; 
-	
 	
 	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
     if (message == NULL) {
@@ -49,7 +50,6 @@ void* dbEditor(void* arg) {
 	}
 	
 	message->mtype = 1; // Update DB message
-	
 	if((serverID = msgget(serverKey, msgflg)) < 0)
 	{
 		perror("msgget");
@@ -81,5 +81,4 @@ void* dbEditor(void* arg) {
 		}
 	}
 	pthread_exit(0); 	
-	
 }

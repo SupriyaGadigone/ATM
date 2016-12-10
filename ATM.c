@@ -1,11 +1,9 @@
 /**
-	ATM
+	ATM: Prompts customer for account number and PIN and allows them to check amount of funds or make a withdrawal 
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone
 	
-	TO COMPILE: 
-	* gcc ATM.c -o ATM -lpthread
 **/
 
 #include <stdlib.h>
@@ -35,7 +33,9 @@ int main() {
 		
 	return 0; 
 }
-
+/*
+ * Function used to send and receive messages from server
+ */
 void* atm(void* arg) {
 	char accountNumber[5] = {'\0'};
 	char PIN[3] = {'\0'};
@@ -49,15 +49,11 @@ void* atm(void* arg) {
 	char amount[100];
 	key_t serverKey = 1111;
 	key_t atmKey = 5678;
-	//key_t sevKey = 9101;
-	
-	
+
 	msg *message;
 	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
 	
 	while(1) {
-	
-		
 		while(valid == false && numLogin < 3) {
 			printf("\nPlease enter an account number (5 digits) \n");	
 		    scanf("%s", accountNumber);	
@@ -74,16 +70,14 @@ void* atm(void* arg) {
 				exit(1); 
 			}
 			
-			if((atmID = msgget(atmKey, msgflg)) < 0) {
+			if((atmID = msgget(atmKey, msgflg)) < 0) { 
 				perror("msgget"); 
 				exit(1); 
 			}
 			
-			
-			if(msgsnd(serverID, message, 1000, 0) == -1) {
+			if(msgsnd(serverID, message, 1000, 0) == -1) { // send user inputted account # and PIN to dbServer
 				perror("msgsnd");  
 			}
-			
 			
 			if(msgrcv(atmID, message, 1000, 3, 0) < 0) // receive OK or NOT OK message
 			{
@@ -91,21 +85,19 @@ void* atm(void* arg) {
 	
 			}
 	
-			
-			if(strcmp(message->mtext, "OK") == 0) {
+			if(strcmp(message->mtext, "OK") == 0) { // if OK, continue to further options
 				valid = true; 
 				printf("\nPress 1 to display funds and 2 to withdraw \n");	
 				scanf("%d", &input);
 				switch (input){
 					
-				case 1:
+				case 1:		// Display funds
 					message->mtype = 4;
 					strcpy(message->mtext,accountNumber);
 					if(msgsnd(serverID, message, 1000, 0) == -1) 
 					{
 						perror("msgsnd");  
 			        }
-					
 					
 					if(msgrcv(atmID, message, 1000, 5, 0) < 0) // receive OK or NOT OK message
 					{
@@ -117,7 +109,7 @@ void* atm(void* arg) {
 				    
 				    break;
 				    
-				case 2:
+				case 2:		// Withdrawal
 				  printf("\nWithdrawal amount\n");	
 				  scanf("%s", amount);
 				  
@@ -132,8 +124,7 @@ void* atm(void* arg) {
 						perror("msgsnd");  
 			        }
 					
-					
-					if(msgrcv(atmID, message, 1000, 7, 0) < 0) 
+					if(msgrcv(atmID, message, 1000, 7, 0) < 0) // Receive NOT ENOUGH or ENOUGH FUNDS from dbServer
 					{
 						perror("msrcv");
 				    }

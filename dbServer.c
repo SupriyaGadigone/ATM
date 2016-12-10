@@ -1,11 +1,9 @@
 /**
-	Database server
+	Database server: Updates the database and sends messages to the ATM
 	
 	@author Kshamina Ghelani
 	@author Supriya Gadigone
-	
-	TO COMPILE: 
-	* gcc ATM.c -o ATM -lpthread
+
 **/
 
 #include <stdlib.h>
@@ -38,7 +36,6 @@ void* atm(void *arg);
 
 int main() {
 	accounts = (bank *)malloc(sizeof(bank));
-	//initialize(accounts); 
 	pthread_t server; 
 	pthread_t atm1;
 	
@@ -51,6 +48,14 @@ int main() {
 	return 0; 
 }
 
+/*
+ * Write the account number, PIN and amount of funds to the file dataBase.txt
+ * Add the account to the list of accounts 
+ * 
+ * @param accountNumber, new acc #
+ * @param PIN, new PIN
+ * @param amountOfFunds, initial funds in account
+*/
 void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) {
 	database = fopen("dataBase.txt", "a");
 
@@ -59,6 +64,7 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) 
 		exit(1);
 	}
 
+	// write to file
 	fprintf(database, "%s,", accountNumber);
 	fprintf(database, "%s,", PIN);
 	fprintf(database, "%s\n", amountOfFunds);  
@@ -67,7 +73,7 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) 
 	
 	fclose(database); 
 	
-	account *temp; 
+	account *temp; 	// add to queue
 	temp = (account *)malloc(sizeof(account));
 	strcpy(temp->accountNumber, accountNumber); 
 	strcpy(temp->PIN, PIN); 
@@ -76,71 +82,28 @@ void updateDatabase(char accountNumber[5], char PIN[3], char amountOfFunds[10]) 
 	 
 }
 
-void populateDB() {
-	char *token;
-	char *data;
-	int counter = 0; 
-	const char delimeter[2] = ","; 
-	account *temp = NULL;
-	
-	database = fopen("dataBase.txt", "r");
-	char line[256];
-	
-	while(fgets(line, sizeof(line), database)) {
-		data = line; 
-		token = strtok(data, delimeter);
-		while( token != NULL ) 
-		{
-			if(counter == 0) {
-				strncpy(temp->accountNumber, token, 5);
-			}
-			else if(counter == 1) {
-				strncpy(temp->PIN, token, 3);
-			}
-			else if(counter == 2) {
-				float f = atof(token);
-				temp->amountOfFunds = f; 
-			}
-			token = strtok(NULL, delimeter);
-			counter++;
-		}
-		enqueue(accounts, temp); 
-		counter = 0; 
-	}
-	fclose(database); 	
-}
-
+/*
+ * Function to receive message from dbEditor
+*/
 void* dbServer(void *arg) {
-	//key_t editorKey = 5678;
 	key_t serverKey = 1234;
 	
-	int msgflg = IPC_CREAT | 0666;
-	
-	//int atmID; 
+	int msgflg = IPC_CREAT | 0666; 
 	int editorID;
-	
 	msg message; 
-
 	
-
 	int i;
-	//bool check = false; 
-	
-	
 	
 	if((editorID = msgget(serverKey, msgflg))< 0)	// message queue for editor
 	{
 		perror("msgget for server failed");
 		exit(1);
 	}
-	
 
-	
-	for(;;) {
+	for(;;) {	// keep receiving from editor
 		if(msgrcv(editorID, &message, sizeof(msg), 1, 0)>0) // receive Update DB message
 		{
-			perror("msgrcv: editor worked");
-			
+			perror("msgrcv: editor worked");	
 		}
 		 
 		if(message.mtype == 1) {	//Update DB
@@ -161,18 +124,16 @@ void* dbServer(void *arg) {
 			for(i = 0; i < 10; i++) {
 				amountOfFunds[i] = message.mtext[i+8];
 			}
-			
-			
 			updateDatabase(accountNumber, PIN, amountOfFunds); 
-			//printQueue(accounts); 
-			
 		}
-	
 	}
 	pthread_exit(0); 
 	
 }
 
+/*
+ * Function to receive and send messages to/from ATM
+*/
 void* atm(void *arg)
 {
 	key_t atmKey = 5678;
@@ -184,16 +145,15 @@ void* atm(void *arg)
 	
 	int check = 0; 
 	
-	
 	msg message;
 	
-	if((atmID = msgget(atmKey, msgflg))	< 0)		// message queue for ATM
+	if((atmID = msgget(atmKey, msgflg))	< 0)	
 	{
 		perror("msgget for server failed");
 		exit(1);
 	}
 	
-	if((serverID = msgget(serverKey, msgflg))	< 0)		// message queue for ATM
+	if((serverID = msgget(serverKey, msgflg))	< 0)
 	{
 		perror("msgget for server2 failed");
 		exit(1);
@@ -201,21 +161,21 @@ void* atm(void *arg)
 	
 	for(;;){
 		
-		if(msgrcv(serverID, &message, 1000, 2, 0) < 0)
+		if(msgrcv(serverID, &message, 1000, 2, 0) < 0)	// login
 		{
 			perror("msgrcv");	
 		}
-		if(msgrcv(serverID, &message, 1000, 4, 0) < 0)
+		if(msgrcv(serverID, &message, 1000, 4, 0) < 0) // display funds
 		{
 			perror("msgrcv");	
 		}
-		if(msgrcv(serverID, &message, 1000, 6, 0) < 0)
+		if(msgrcv(serverID, &message, 1000, 6, 0) < 0) // withdrawal 
 		{
 			perror("msgrcv");	
 		}
 
 
-		if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
+		if(message.mtype == 2) { // check for account number and pin in DB
 				
 				char accountNumber[5]; 
 				char PIN[3];
@@ -277,13 +237,11 @@ void* atm(void *arg)
 			
 			if(message.mtype == 6) //withdrawfunds 
 			{
-				
 				char accountNumber[5]; 
 				char amount[10];
 				char PIN[3];
 				float a;
 				float balance;
-				
 				
 				int i; 
 				for(i = 0; i < 5; i++) {
@@ -298,7 +256,6 @@ void* atm(void *arg)
 				accountNumber[5] = '\0';
 				PIN[10] = '\0';
 				amount[10] = '\0';
-				
 				
 				a = strtof(amount, NULL);  //converting to float
 				
@@ -322,7 +279,6 @@ void* atm(void *arg)
 					balance = balance - a;
 				}
 				
-				
 				char s[80];
 				sprintf(s, "%f", balance);
 				strcpy(message.mtext, s);
@@ -333,11 +289,7 @@ void* atm(void *arg)
 				if(msgsnd(atmID, &message, 1000, 0) == -1) {
 					perror("msgsnd"); 
 				}
-				
 			}
-			
-			
-	
 	}
 	pthread_exit(0);
 }
