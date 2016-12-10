@@ -182,7 +182,7 @@ void* atm(void *arg)
 	int atmID; 
 	int serverID;
 	
-	bool check = false; 
+	int check = 0; 
 	
 	
 	msg message;
@@ -207,11 +207,13 @@ void* atm(void *arg)
 	}
 	
 	for(;;){
+		
 		if(msgrcv(serverID, &message, 1000, 2, 0) >0)
 		{
 			perror("msgrcv: atm worked");	
 		}
-	
+
+        perror(message.mtext);
 				if(message.mtype == 2) { //check if PIN and accountnumber are valid or not
 				
 				char accountNumber[5]; 
@@ -222,32 +224,47 @@ void* atm(void *arg)
 					accountNumber[i] = message.mtext[i];
 				}
 				for(i = 0; i < 3; i++) {
-					PIN[i] = message.mtext[i+3]; 
+					PIN[i] = message.mtext[i+5]; 
 				}
 				accountNumber[5] = '\0';
 				PIN[3] = '\0';
-
-				account *temp = accounts->front;
-				temp = (account *)malloc((unsigned)(sizeof(account) - sizeof message.mtext + MSGSZ));
+                
+				//account *temp = (account *)malloc((unsigned)(sizeof(account) - sizeof message.mtext + MSGSZ));
+				account *temp;
+				temp = accounts->front;
+				perror("*1");
+		        perror(accounts->front->accountNumber);
+				 perror("**2");
+					perror(temp->accountNumber);
+					perror("***3");
+					perror(accountNumber);
 				while (temp != NULL) {
+					perror("ac**");
+					perror(accounts->front->accountNumber);
+					perror(accountNumber);
+					perror("end ac**");
+					perror("p**");
+					perror(accounts->front->PIN);
+					perror(PIN);
+					perror("end p**");
 					if(strcmp(temp->accountNumber, accountNumber) == 0 && strcmp(temp->PIN, PIN) == 0) {
-						check = true; 
+						check = 1; 
+						perror("got in if aya!");
 					}
 					temp = temp->next; 
 				}
-				if(check) {
+				if(check == 1) {
+					perror("OKAY NOW AM DONE WITH THIS");
 					strcpy(message.mtext, "OK"); 
 				}
-				else {
-					strcpy(message.mtext, "NOT OK"); 
-				}
-
+				//else {
+				//	strcpy(message.mtext, "NOT OK"); 
+				//}
+				perror("come on!");
+				perror(message.mtext);
 				message.mtype = 3; // Confirm/Revoke login
-				perror("4");
-				strcpy(message.mtext, "NOT OK");
 				if(msgsnd(atmID, &message, 1000, 0) == 0) {
-					perror("msgsnd to atm worked");
-					exit(1); 
+					perror("msgsnd to atm worked"); 
 				}
 			}
 			

@@ -54,8 +54,7 @@ void* atm(void* arg) {
 	message = (msg *)malloc((unsigned)(sizeof(msg) - sizeof message->mtext + MSGSZ));
 	
 	while(1) {
-		printf("\nPlease enter an account number (5 digits) \n");	
-		scanf("%s", accountNumber);	
+	
 		
 		while(valid == false && numLogin < 3) {
 			printf("\nPlease enter an account number (5 digits) \n");	
@@ -80,23 +79,28 @@ void* atm(void* arg) {
 			
 			
 			if(msgsnd(serverID, message, 1000, 0) == 0) {
-				perror("msgsnd to server from atm"); 
-				exit(1); 
+				perror("msgsnd to server from atm");  
 			}
 			
 			
 			if(msgrcv(atmID, message, 1000, 3, 0) > 0) // receive OK or NOT OK message
 			{
 				perror("msrcv wroked*");
-				exit(1);
+	
 			}
+	
+			perror(message->mtext);
 			
 			if(strcmp(message->mtext, "OK") == 0) {
+				
 				valid = true; 
+				perror(message->mtext);
 				
 			}
 			else {
 				numLogin++; 
+				perror("else");
+				perror(message->mtext);
 			}
 			
 		}
